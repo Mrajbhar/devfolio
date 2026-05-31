@@ -1,417 +1,640 @@
 // Tailwind CSS v4 Ready
 // npm install tailwindcss @tailwindcss/vite framer-motion
+// Add to index.html <head>:
+// <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 // src/index.css => @import "tailwindcss";
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState, useRef } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 
 const profileImage = '/profile.png';
 
+/* ─── Icons ─── */
 const GithubIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
     <path d="M12 2C6.477 2 2 6.486 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.866-.014-1.7-2.782.605-3.369-1.344-3.369-1.344-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.31.678.92.678 1.855 0 1.338-.012 2.42-.012 2.75 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.486 17.523 2 12 2z" />
   </svg>
 );
-
 const LinkedinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
     <path d="M4.98 3.5C4.98 4.604 4.104 5.5 3 5.5S1.02 4.604 1.02 3.5 1.896 1.5 3 1.5s1.98.896 1.98 2zM1 8h4v13H1zM8 8h3.8v1.8h.05c.53-1 1.82-2.05 3.75-2.05C19.5 7.75 21 10 21 14v7h-4v-6.2c0-1.48-.03-3.38-2.06-3.38-2.06 0-2.38 1.6-2.38 3.27V21H8z" />
   </svg>
 );
-
 const LeetcodeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
     <path d="M14.1 2l-1.4 1.4 6.5 6.6-6.5 6.6 1.4 1.4L22 10zM8.5 7L2 13.5 8.5 20l1.4-1.4-5.1-5.1 5.1-5.1z" />
   </svg>
 );
+const ArrowRight = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <path d="M5 12h14M12 5l7 7-7 7" />
+  </svg>
+);
+const ExternalLink = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+  </svg>
+);
 
+/* ─── Noise texture SVG as data URI ─── */
+const noiseBg = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`;
+
+/* ─── Floating orb component ─── */
+const Orb = ({ className }) => (
+  <div className={`pointer-events-none absolute rounded-full blur-[120px] ${className}`} />
+);
+
+/* ─── Section label ─── */
+const SectionLabel = ({ children }) => (
+  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
+    <span className="h-1.5 w-1.5 rounded-full bg-[#7DF9FF]" />
+    <span className="font-['DM_Sans'] text-xs font-medium uppercase tracking-[0.25em] text-[#7DF9FF]">
+      {children}
+    </span>
+  </div>
+);
+
+/* ─── Skill badge ─── */
+const Badge = ({ children }) => (
+  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-['DM_Sans'] text-xs font-medium text-white/60 backdrop-blur-sm transition-all duration-300 hover:border-[#7DF9FF]/30 hover:bg-[#7DF9FF]/5 hover:text-[#7DF9FF]">
+    {children}
+  </span>
+);
+
+/* ══════════════════════════════════════════════
+   MAIN COMPONENT
+══════════════════════════════════════════════ */
 export default function Portfolio2026() {
-  const [darkMode, setDarkMode] = useState(true);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [activeSection, setActiveSection] = useState('home');
+  const [scrolled, setScrolled] = useState(false);
+  const heroRef = useRef(null);
 
-  const navItems = ['Home', 'About', 'Skills', 'Projects', 'Experience', 'Contact'];
+  const { scrollYProgress } = useScroll();
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.18], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 0.18], [0, -60]);
+
+  const navItems = [
+    { id: 'home', label: 'Home' },
+    { id: 'about', label: 'About' },
+    { id: 'skills', label: 'Skills' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'experience', label: 'Experience' },
+    { id: 'contact', label: 'Contact' },
+  ];
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+      const sections = navItems.map((n) => document.getElementById(n.id));
+      const current = sections.findLast((s) => s && s.getBoundingClientRect().top <= 120);
+      if (current) setActiveSection(current.id);
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const skills = [
+    { name: '.NET Core', level: 95, color: '#7DF9FF' },
+    { name: 'ASP.NET MVC', level: 92, color: '#A78BFA' },
+    { name: 'React.js', level: 88, color: '#7DF9FF' },
+    { name: 'Node.js', level: 82, color: '#A78BFA' },
+    { name: 'SQL Server', level: 90, color: '#7DF9FF' },
+    { name: 'Oracle DB', level: 85, color: '#A78BFA' },
+    { name: 'MongoDB', level: 80, color: '#7DF9FF' },
+    { name: 'C#', level: 95, color: '#A78BFA' },
+  ];
+
+  const experiences = [
+    {
+      year: '2025 – Present',
+      role: 'Software Engineer',
+      company: 'Clover Infotech',
+      client: 'Client: HDFC Bank',
+      description:
+        'Leading development of an in-house Mutual Fund & Bond Trading platform serving 4000+ active users. Implemented SWIFT payment integration, combined SWIFT generation, and third-party Email APIs for automated notifications.',
+      gradient: 'from-[#7DF9FF] to-[#A78BFA]',
+      align: 'right',
+      skills: ['C#', '.NET Core', 'ASP.NET MVC', 'SQL Server', 'Windows Forms', 'React', 'SWIFT'],
+    },
+    {
+      year: '2024 – 2025',
+      role: 'Software Engineer',
+      company: 'Sodel Software Solutions',
+      client: 'E-Learning Domain',
+      description:
+        'Built a dynamic assessment platform with real-time tracking, Google/Microsoft OAuth, and multithreaded report generation for 10,000+ records — cutting report time by 80% and optimising 15+ pages by 25%.',
+      gradient: 'from-[#A78BFA] to-[#F472B6]',
+      align: 'left',
+      skills: ['ASP.NET', 'C#', 'Entity Framework', 'MySQL', 'AJAX', 'jQuery', 'Multithreading'],
+    },
+    {
+      year: '2022 – 2024',
+      role: 'Software Developer',
+      company: 'Osource Global',
+      client: 'HRMS Applications',
+      description:
+        'Migrated 3 HRMS projects from .NET 4.0 → 4.8, reducing errors by 50%. Optimised page load from 3 min → 5 sec. Built RESTful APIs and Oracle stored procedures for scalable HRMS architecture.',
+      gradient: 'from-[#7DF9FF] to-[#34D399]',
+      align: 'right',
+      skills: ['.NET Framework', '.NET Core', 'Oracle SQL', 'REST API', 'C#', 'Performance'],
+    },
+    {
+      year: '2022',
+      role: 'Junior Software Engineer',
+      company: 'Greytrix India',
+      client: 'CRM Application',
+      description:
+        'Contributed to CRM development with ASP.NET MVC. Participated in migration to Node.js + React.js stack. Used Git/GitLab for version control and collaborated on feature delivery and bug fixes.',
+      gradient: 'from-[#F472B6] to-[#A78BFA]',
+      align: 'left',
+      skills: ['ASP.NET MVC', 'React.js', 'Node.js', 'Git', 'GitLab', 'JavaScript'],
+    },
+  ];
 
   return (
     <div
-      className={`${
-        darkMode
-          ? 'bg-[#050816] text-white'
-          : 'bg-gradient-to-br from-slate-50 via-white to-blue-50 text-slate-900'
-      } min-h-screen overflow-x-hidden transition-all duration-500`}
+      className="relative min-h-screen overflow-x-hidden bg-[#080810] font-['DM_Sans'] text-white"
+      style={{ backgroundImage: noiseBg }}
     >
-      {/* Cursor glow — hidden on touch devices */}
-      <motion.div
-        animate={{ x: mousePosition.x - 250, y: mousePosition.y - 250 }}
-        transition={{ type: 'spring', stiffness: 80, damping: 25 }}
-        className="pointer-events-none fixed left-0 top-0 z-0 hidden h-[500px] w-[500px] rounded-full bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 blur-3xl md:block"
-      />
-      <motion.div
-        animate={{ x: mousePosition.x - 10, y: mousePosition.y - 10 }}
-        transition={{ duration: 0.05 }}
-        className="pointer-events-none fixed left-0 top-0 z-[60] hidden h-5 w-5 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 shadow-[0_0_30px_rgba(139,92,246,0.9)] md:block"
-      />
+      {/* ── Global ambient orbs ── */}
+      <Orb className="left-[-20%] top-[-10%] h-[700px] w-[700px] bg-[#7DF9FF]/6" />
+      <Orb className="right-[-15%] top-[30%] h-[600px] w-[600px] bg-[#A78BFA]/8" />
+      <Orb className="bottom-[10%] left-[10%] h-[500px] w-[500px] bg-[#F472B6]/5" />
 
-      {/* ─── HEADER ─── */}
+      {/* ════════════════════════════════
+          NAVBAR
+      ════════════════════════════════ */}
       <header
-        className={`${
-          darkMode
-            ? 'border-white/10 bg-black/30'
-            : 'border-slate-200 bg-white/70 shadow-lg shadow-slate-200/50'
-        } fixed top-0 z-50 w-full border-b backdrop-blur-2xl`}
+        className={`fixed top-0 z-50 w-full transition-all duration-500 ${
+          scrolled ? 'py-3' : 'py-5'
+        }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
+        <div
+          className={`mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 transition-all duration-500 ${
+            scrolled
+              ? 'rounded-2xl border border-white/8 bg-[#080810]/80 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl mx-4 sm:mx-6 lg:mx-8'
+              : ''
+          }`}
+          style={scrolled ? { padding: '12px 20px' } : {}}
+        >
           {/* Logo */}
-          <div className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-2xl font-black text-transparent sm:text-3xl lg:text-4xl">
-            MR
-          </div>
+          <a href="#home" className="group flex items-center gap-3">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7DF9FF] to-[#A78BFA] shadow-[0_0_20px_rgba(125,249,255,0.4)]">
+              <span className="font-['Syne'] text-sm font-black text-[#080810]">MR</span>
+            </div>
+            <span className="hidden font-['Syne'] text-sm font-bold tracking-wider text-white/70 transition-colors group-hover:text-white sm:block">
+              Shreemohan Rajbhar
+            </span>
+          </a>
 
-          {/* Desktop Nav */}
-          <nav
-            className={`${
-              darkMode
-                ? 'border border-white/10 bg-white/5'
-                : 'border border-slate-200 bg-white/80 shadow-lg shadow-slate-200/40'
-            } hidden items-center gap-1 rounded-full p-2 backdrop-blur-2xl lg:flex`}
-          >
+          {/* Desktop nav */}
+          <nav className="hidden items-center gap-1 lg:flex">
             {navItems.map((item) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className={`${
-                  darkMode ? 'text-gray-300' : 'text-slate-700'
-                } rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500 hover:to-blue-500 hover:text-white`}
+                key={item.id}
+                href={`#${item.id}`}
+                className={`relative rounded-lg px-4 py-2 font-['DM_Sans'] text-sm font-medium transition-all duration-300 ${
+                  activeSection === item.id
+                    ? 'text-white'
+                    : 'text-white/50 hover:text-white/90'
+                }`}
               >
-                {item}
+                {activeSection === item.id && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    className="absolute inset-0 rounded-lg bg-white/8"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                  />
+                )}
+                <span className="relative z-10">{item.label}</span>
               </a>
             ))}
           </nav>
 
-          {/* Right Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`${
-                darkMode
-                  ? 'border-white/10 bg-white/5 text-white'
-                  : 'border-slate-200 bg-white text-slate-900'
-              } rounded-full border px-3 py-1.5 text-sm sm:px-4 sm:py-2`}
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            <a
+              href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+              className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA] px-5 py-2.5 font-['DM_Sans'] text-sm font-semibold text-[#080810] shadow-[0_0_20px_rgba(125,249,255,0.25)] transition-all duration-300 hover:shadow-[0_0_30px_rgba(125,249,255,0.45)] hover:scale-105 sm:flex"
             >
-              {darkMode ? '☀️' : '🌙'}
-            </button>
+              Hire Me <ArrowRight />
+            </a>
+
+            {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenu(!mobileMenu)}
-              className={`${
-                darkMode ? 'text-white' : 'text-slate-900'
-              } text-2xl lg:hidden`}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white transition-all hover:bg-white/10 lg:hidden"
               aria-label="Toggle menu"
             >
-              {mobileMenu ? '✕' : '☰'}
+              <div className="flex flex-col gap-1.5">
+                <motion.span
+                  animate={{ rotate: mobileMenu ? 45 : 0, y: mobileMenu ? 7 : 0 }}
+                  className="block h-[1.5px] w-5 bg-white origin-center"
+                />
+                <motion.span
+                  animate={{ opacity: mobileMenu ? 0 : 1, scaleX: mobileMenu ? 0 : 1 }}
+                  className="block h-[1.5px] w-5 bg-white"
+                />
+                <motion.span
+                  animate={{ rotate: mobileMenu ? -45 : 0, y: mobileMenu ? -7 : 0 }}
+                  className="block h-[1.5px] w-5 bg-white origin-center"
+                />
+              </div>
             </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown */}
-        {mobileMenu && (
-          <div
-            className={`${
-              darkMode
-                ? 'border-white/10 bg-[#050816]/95'
-                : 'border-slate-200 bg-white/95'
-            } border-t backdrop-blur-2xl lg:hidden`}
-          >
-            <div className="flex flex-col px-4 py-4">
-              {navItems.map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
+        {/* Mobile dropdown */}
+        <AnimatePresence>
+          {mobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -16, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.97 }}
+              transition={{ duration: 0.2 }}
+              className="mx-4 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d1a]/95 p-4 shadow-2xl backdrop-blur-2xl lg:hidden"
+            >
+              {navItems.map((item, i) => (
+                <motion.a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
                   onClick={() => setMobileMenu(false)}
-                  className={`${
-                    darkMode ? 'text-gray-300' : 'text-slate-700'
-                  } rounded-xl px-4 py-3 text-base font-semibold transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500 hover:to-blue-500 hover:text-white`}
+                  className={`flex items-center justify-between rounded-xl px-4 py-3.5 font-['DM_Sans'] text-sm font-medium transition-all ${
+                    activeSection === item.id
+                      ? 'bg-white/8 text-white'
+                      : 'text-white/50 hover:bg-white/5 hover:text-white'
+                  }`}
                 >
-                  {item}
-                </a>
+                  {item.label}
+                  {activeSection === item.id && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#7DF9FF]" />
+                  )}
+                </motion.a>
               ))}
-            </div>
-          </div>
-        )}
+              <div className="mt-3 border-t border-white/8 pt-3">
+                <a
+                  href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA] py-3 font-['DM_Sans'] text-sm font-semibold text-[#080810]"
+                >
+                  Hire Me <ArrowRight />
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* ─── HERO ─── */}
-      <section id="home" className="min-h-screen px-4 pt-24 pb-16 sm:px-6 sm:pt-32 lg:pt-40">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      {/* ════════════════════════════════
+          HERO
+      ════════════════════════════════ */}
+      <section id="home" ref={heroRef} className="relative min-h-screen overflow-hidden">
+        {/* Decorative grid */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
 
-          {/* Left Content */}
-          <div className="order-2 lg:order-1">
-            <p className="mb-4 text-xs uppercase tracking-[0.4em] text-cyan-300 sm:mb-6 sm:text-sm">
-              Welcome to My Portfolio
-            </p>
-
-            <h1
-              className={`text-4xl font-black leading-[0.95] sm:text-5xl md:text-6xl lg:text-[5.5rem] xl:text-[7rem] ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
+        <motion.div
+          style={{ opacity: heroOpacity, y: heroY }}
+          className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 pt-24 pb-16 sm:px-6 lg:flex-row lg:gap-20 lg:pt-0"
+        >
+          {/* Left */}
+          <div className="flex-1 text-center lg:text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-6 inline-flex"
             >
-              Shreemohan Rajbhar
-              <span className="block bg-gradient-to-r from-purple-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent">
-                Full Stack .NET Developer
-              </span>
-            </h1>
+              <SectionLabel>Full Stack .NET Developer · Mumbai</SectionLabel>
+            </motion.div>
 
-            <p
-              className={`${
-                darkMode ? 'text-gray-400' : 'text-slate-600'
-              } mt-6 max-w-2xl text-base leading-relaxed sm:mt-8 sm:text-lg lg:text-xl`}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="font-['Syne'] text-5xl font-black leading-[1.0] tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-[82px]"
             >
-              Full Stack Developer with 4+ years of experience in building scalable web and
-              desktop applications using .NET Core, ASP.NET MVC, React.js, Node.js, SQL Server,
-              Oracle, MongoDB, and modern frontend technologies.
-            </p>
-
-            {/* Skill Chips */}
-            <div className="mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
-              {['.NET Core', 'ASP.NET MVC', 'React.js', 'Node.js', 'SQL Server', 'Oracle', 'MongoDB', 'Full Stack'].map(
-                (role) => (
-                  <motion.div
-                    key={role}
-                    whileHover={{ y: -4 }}
-                    className={`${
-                      darkMode
-                        ? 'border border-white/10 bg-white/5 text-white'
-                        : 'border border-slate-200 bg-white text-slate-800 shadow-md shadow-slate-200/40'
-                    } rounded-xl px-4 py-2 text-sm font-medium backdrop-blur-xl sm:rounded-2xl sm:px-5 sm:py-2.5`}
-                  >
-                    {role}
-                  </motion.div>
-                )
-              )}
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="mt-8 flex flex-wrap items-center gap-3 sm:mt-10 sm:gap-4">
-              <a
-                href="mailto:yourmail@gmail.com?subject=Hiring%20Inquiry"
-                className="inline-flex items-center justify-center rounded-xl bg-cyan-500 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-cyan-400 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-lg"
+              Shreemohan
+              <br />
+              <span
+                className="bg-gradient-to-r from-[#7DF9FF] via-[#A78BFA] to-[#F472B6] bg-clip-text text-transparent"
+                style={{ WebkitBackgroundClip: 'text' }}
               >
-                Hire Me
+                Rajbhar
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-white/50 lg:mx-0 lg:text-lg"
+            >
+              4+ years crafting scalable web & desktop applications — from sleek React frontends
+              to robust .NET backends. I turn complex problems into elegant, high-performance
+              software.
+            </motion.p>
+
+            {/* Tech stack row */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="mt-8 flex flex-wrap justify-center gap-2 lg:justify-start"
+            >
+              {['.NET Core', 'React.js', 'Node.js', 'SQL Server', 'Oracle', 'MongoDB'].map((t) => (
+                <Badge key={t}>{t}</Badge>
+              ))}
+            </motion.div>
+
+            {/* CTA row */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="mt-10 flex flex-wrap items-center justify-center gap-4 lg:justify-start"
+            >
+              <a
+                href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA] px-7 py-4 font-['DM_Sans'] text-sm font-semibold text-[#080810] shadow-[0_0_30px_rgba(125,249,255,0.3)] transition-all duration-300 hover:shadow-[0_0_50px_rgba(125,249,255,0.5)] hover:scale-105"
+              >
+                Get In Touch
+                <motion.span
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <ArrowRight />
+                </motion.span>
               </a>
               <a
                 href="/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${
-                  darkMode
-                    ? 'border border-white/10 bg-white/5 text-white'
-                    : 'border border-slate-200 bg-white text-slate-800 shadow-lg shadow-slate-200/40'
-                } inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold transition-all duration-300 hover:-translate-y-1 hover:scale-105 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-lg`}
+                className="flex items-center gap-2 rounded-2xl border border-white/12 bg-white/5 px-7 py-4 font-['DM_Sans'] text-sm font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/25 hover:bg-white/10 hover:text-white"
               >
-                Download Resume
+                Download CV <ExternalLink />
               </a>
-            </div>
+            </motion.div>
 
-            {/* Social Links */}
-            <div className="mt-8 flex items-center gap-3 sm:mt-10 sm:gap-4">
+            {/* Socials */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mt-10 flex items-center justify-center gap-4 lg:justify-start"
+            >
               {[
-                { Icon: GithubIcon, link: 'https://github.com/Mrajbhar' },
-                { Icon: LinkedinIcon, link: 'https://www.linkedin.com/in/mohan-rajbhar/' },
-                { Icon: LeetcodeIcon, link: 'https://leetcode.com/u/Mrajbhar/' },
-              ].map(({ Icon, link }, index) => (
+                { Icon: GithubIcon, href: 'https://github.com/Mrajbhar', label: 'GitHub' },
+                { Icon: LinkedinIcon, href: 'https://www.linkedin.com/in/mohan-rajbhar/', label: 'LinkedIn' },
+                { Icon: LeetcodeIcon, href: 'https://leetcode.com/u/Mrajbhar/', label: 'LeetCode' },
+              ].map(({ Icon, href, label }) => (
                 <a
-                  key={index}
-                  href={link}
+                  key={label}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${
-                    darkMode
-                      ? 'border border-white/10 bg-white/5 text-white'
-                      : 'border border-slate-200 bg-white text-slate-800 shadow-lg shadow-slate-200/40'
-                  } flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-500 hover:-translate-y-2 hover:scale-110 sm:h-14 sm:w-14 sm:rounded-2xl`}
+                  aria-label={label}
+                  className="group flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/50 backdrop-blur-sm transition-all duration-300 hover:border-[#7DF9FF]/40 hover:bg-[#7DF9FF]/10 hover:text-[#7DF9FF] hover:-translate-y-1"
                 >
                   <Icon />
                 </a>
               ))}
-            </div>
+              <div className="h-[1px] w-8 bg-white/15" />
+              <span className="font-['DM_Sans'] text-xs text-white/30">Find me online</span>
+            </motion.div>
           </div>
 
-          {/* Right Image */}
-          <div className="order-1 flex items-center justify-center lg:order-2">
-            {/* Orbit rings — scaled down on mobile */}
-            <div className="relative flex items-center justify-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-                className="absolute h-[300px] w-[300px] rounded-full border border-cyan-400/10 sm:h-[420px] sm:w-[420px] lg:h-[620px] lg:w-[620px] xl:h-[720px] xl:w-[720px]"
-              />
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
-                className="absolute h-[260px] w-[260px] rounded-full border border-purple-500/10 sm:h-[360px] sm:w-[360px] lg:h-[520px] lg:w-[520px] xl:h-[620px] xl:w-[620px]"
-              >
-                <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.9)] sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
-              </motion.div>
+          {/* Right — Profile visual */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, delay: 0.2 }}
+            className="relative mt-14 flex-shrink-0 lg:mt-0"
+          >
+            {/* Rotating rings */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-[-40px] rounded-full border border-dashed border-[#7DF9FF]/15"
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-[-20px] rounded-full border border-[#A78BFA]/10"
+            >
+              <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#7DF9FF] shadow-[0_0_20px_rgba(125,249,255,1)]" />
+            </motion.div>
 
-              <motion.div
-                animate={{ y: [-8, 8, -8] }}
-                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                className="relative z-10"
-              >
-                <div className="absolute inset-0 rounded-[28px] bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-blue-500/20 blur-2xl sm:rounded-[36px] lg:rounded-[42px] lg:blur-3xl" />
-                <div className="overflow-hidden rounded-[26px] border border-purple-500/40 bg-[#070816] p-[2px] shadow-[0_0_60px_rgba(139,92,246,0.4)] sm:rounded-[34px] lg:rounded-[40px] lg:shadow-[0_0_120px_rgba(139,92,246,0.45)]">
-                  <div className="overflow-hidden rounded-[24px] sm:rounded-[32px] lg:rounded-[38px]">
-                    <img
-                      src={profileImage}
-                      alt="Shreemohan Rajbhar"
-                      className="h-[320px] w-[240px] object-cover object-top sm:h-[440px] sm:w-[330px] lg:h-[580px] lg:w-[430px] xl:h-[680px] xl:w-[500px]"
-                    />
+            {/* Card */}
+            <motion.div
+              animate={{ y: [-8, 8, -8] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative"
+            >
+              <div className="absolute -inset-2 rounded-[36px] bg-gradient-to-br from-[#7DF9FF]/20 via-[#A78BFA]/15 to-[#F472B6]/10 blur-2xl" />
+              <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-b from-white/8 to-white/3 p-1 shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
+                <img
+                  src={profileImage}
+                  alt="Shreemohan Rajbhar"
+                  className="h-[400px] w-[300px] rounded-[28px] object-cover object-top sm:h-[480px] sm:w-[360px] lg:h-[540px] lg:w-[400px]"
+                />
+                {/* Overlay stats card */}
+                <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/10 bg-[#080810]/80 p-4 backdrop-blur-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-['Syne'] text-xs font-bold text-white/40 uppercase tracking-widest">Experience</p>
+                      <p className="font-['Syne'] text-2xl font-black text-white">4+ Years</p>
+                    </div>
+                    <div className="h-8 w-[1px] bg-white/10" />
+                    <div>
+                      <p className="font-['Syne'] text-xs font-bold text-white/40 uppercase tracking-widest">Projects</p>
+                      <p className="font-['Syne'] text-2xl font-black text-white">20+</p>
+                    </div>
+                    <div className="h-8 w-[1px] bg-white/10" />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-[#34D399] shadow-[0_0_8px_#34D399]" />
+                        <p className="font-['Syne'] text-xs font-bold text-[#34D399]">Available</p>
+                      </div>
+                      <p className="font-['DM_Sans'] text-xs text-white/40 mt-0.5">For hire</p>
+                    </div>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
 
-      {/* ─── ABOUT ─── */}
-      <section id="about" className="px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
-        <div
-          className={`mx-auto max-w-7xl rounded-[24px] p-6 backdrop-blur-3xl sm:rounded-[32px] sm:p-10 lg:rounded-[40px] lg:p-12 ${
-            darkMode
-              ? 'border border-white/10 bg-white/5'
-              : 'border border-slate-200 bg-white shadow-2xl shadow-slate-200/40'
-          }`}
+        {/* Scroll hint */}
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          <p className="text-xs uppercase tracking-[0.4em] text-cyan-300 sm:text-sm">About Me</p>
-
-          <h2
-            className={`mt-4 text-3xl font-black leading-tight sm:mt-6 sm:text-4xl lg:text-5xl xl:text-6xl ${
-              darkMode ? 'text-white' : 'text-slate-900'
-            }`}
-          >
-            Experienced Full Stack .NET Developer
-          </h2>
-
-          <p
-            className={`mt-6 text-base leading-relaxed sm:mt-8 sm:text-lg lg:text-xl ${
-              darkMode ? 'text-gray-400' : 'text-slate-600'
-            }`}
-          >
-            I am a passionate Full Stack Developer with 4+ years of experience in designing and
-            developing scalable web and desktop applications. I specialize in building modern
-            applications using .NET Core, ASP.NET MVC, ASP.NET Web Applications, React.js,
-            Node.js, and MongoDB.
-            <br /><br />
-            I have strong experience working with SQL Server, MySQL, Oracle Database, and Windows
-            Forms applications. I focus on creating clean architecture, responsive user interfaces,
-            secure backend APIs, and high-performance applications that deliver seamless user
-            experiences.
-            <br /><br />
-            I enjoy solving complex problems, learning new technologies, and building
-            premium-quality software solutions for businesses and users.
-          </p>
-        </div>
+          <span className="font-['DM_Sans'] text-[10px] uppercase tracking-[0.3em] text-white/20">Scroll</span>
+          <div className="h-8 w-[1px] bg-gradient-to-b from-white/20 to-transparent" />
+        </motion.div>
       </section>
 
-      {/* ─── SKILLS ─── */}
-      <section id="skills" className="px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
+      {/* ════════════════════════════════
+          ABOUT
+      ════════════════════════════════ */}
+      <section id="about" className="px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-10 text-center sm:mb-14 lg:mb-16">
-            <p className="text-xs uppercase tracking-[0.4em] text-purple-300 sm:text-sm">
-              Skills & Expertise
-            </p>
-            <h2
-              className={`mt-4 text-4xl font-black sm:mt-6 sm:text-5xl lg:text-6xl xl:text-7xl ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
-            >
-              Tech Arsenal
-            </h2>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <SectionLabel>About Me</SectionLabel>
+          </motion.div>
 
-          <div className="grid gap-4 grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-            {[
-              'React.js',
-              '.NET Core',
-              'Node.js',
-              'MongoDB',
-              'SQL Server',
-              'MySQL',
-              'Oracle Database',
-              'ASP.NET MVC',
-            ].map((skill) => (
-              <motion.div
-                key={skill}
-                whileHover={{ y: -8 }}
-                className={`${
-                  darkMode
-                    ? 'border border-white/10 bg-white/5'
-                    : 'border border-slate-200 bg-white shadow-xl shadow-slate-200/40'
-                } rounded-[20px] p-5 backdrop-blur-2xl sm:rounded-[28px] sm:p-6 lg:rounded-[32px] lg:p-8`}
-              >
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-cyan-500 text-2xl text-white shadow-[0_0_30px_rgba(139,92,246,0.4)] sm:mb-5 sm:h-16 sm:w-16 sm:text-3xl lg:h-20 lg:w-20 lg:text-4xl">
-                  ✦
-                </div>
-                <h3
-                  className={`text-lg font-black sm:text-xl lg:text-2xl xl:text-3xl ${
-                    darkMode ? 'text-white' : 'text-slate-900'
-                  }`}
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
+            {/* Left — big headline */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+            >
+              <h2 className="font-['Syne'] text-4xl font-black leading-[1.1] text-white sm:text-5xl lg:text-6xl">
+                Building software that{' '}
+                <span className="bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA] bg-clip-text text-transparent">
+                  scales & performs.
+                </span>
+              </h2>
+
+              {/* Stats */}
+              <div className="mt-10 grid grid-cols-3 gap-4">
+                {[
+                  { value: '4+', label: 'Years Exp.' },
+                  { value: '20+', label: 'Projects' },
+                  { value: '50%', label: 'Error Reduction' },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="rounded-2xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm"
+                  >
+                    <p className="font-['Syne'] text-3xl font-black text-white">{s.value}</p>
+                    <p className="mt-1 font-['DM_Sans'] text-xs text-white/40">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Right — description */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="space-y-5 text-base leading-relaxed text-white/50 lg:text-lg"
+            >
+              <p>
+                I'm a passionate Full Stack Developer with 4+ years of experience designing and
+                developing scalable web and desktop applications. I specialise in modern .NET
+                ecosystems paired with contemporary JavaScript frontends.
+              </p>
+              <p>
+                My work spans financial trading platforms at HDFC Bank, e-learning assessment
+                engines, enterprise HRMS systems, and CRM applications — always with a focus on
+                clean architecture, performance, and exceptional user experience.
+              </p>
+              <p>
+                I thrive on turning complex requirements into elegant solutions, whether that
+                means cutting report generation time by 80%, migrating legacy codebases, or
+                building seamless SWIFT payment integrations.
+              </p>
+              <div className="pt-2">
+                <a
+                  href="mailto:m.rajbhar1235@gmail.com"
+                  className="inline-flex items-center gap-2 font-['DM_Sans'] text-sm font-medium text-[#7DF9FF] transition-all hover:gap-3"
                 >
-                  {skill}
-                </h3>
-              </motion.div>
-            ))}
+                  Let's work together <ArrowRight />
+                </a>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ─── PROJECTS ─── */}
-      <section id="projects" className="px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
+      {/* ════════════════════════════════
+          SKILLS
+      ════════════════════════════════ */}
+      <section id="skills" className="px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-10 text-center sm:mb-16 lg:mb-20">
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-300 sm:text-sm">Projects</p>
-            <h2
-              className={`mt-4 text-4xl font-black sm:mt-6 sm:text-5xl lg:text-6xl xl:text-7xl ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
-            >
-              Featured Work
-            </h2>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-4"
+          >
+            <SectionLabel>Skills & Expertise</SectionLabel>
+          </motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="mt-6 font-['Syne'] text-4xl font-black text-white sm:text-5xl lg:text-6xl"
+          >
+            Tech Arsenal
+          </motion.h2>
 
-          <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((project) => (
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { name: '.NET Core', icon: '⬡', desc: 'Enterprise APIs & microservices' },
+              { name: 'ASP.NET MVC', icon: '◈', desc: 'Web apps & REST endpoints' },
+              { name: 'React.js', icon: '◎', desc: 'Dynamic frontends & SPAs' },
+              { name: 'Node.js', icon: '◉', desc: 'Server-side JS & tooling' },
+              { name: 'SQL Server', icon: '▣', desc: 'Relational DBs & procedures' },
+              { name: 'Oracle DB', icon: '◆', desc: 'Enterprise database systems' },
+              { name: 'MongoDB', icon: '◐', desc: 'NoSQL & document stores' },
+              { name: 'C#', icon: '◑', desc: 'Core language & patterns' },
+            ].map((skill, i) => (
               <motion.div
-                key={project}
-                whileHover={{ y: -8 }}
-                className={`${
-                  darkMode
-                    ? 'border border-white/10 bg-white/5'
-                    : 'border border-slate-200 bg-white shadow-xl shadow-slate-200/40'
-                } overflow-hidden rounded-[24px] backdrop-blur-2xl sm:rounded-[30px] lg:rounded-[36px]`}
+                key={skill.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/15 hover:bg-white/6"
               >
-                <div className="h-44 bg-gradient-to-br from-purple-500/20 to-cyan-500/20 sm:h-52 lg:h-56" />
-                <div className="p-6 sm:p-8">
-                  <h3
-                    className={`text-xl font-black sm:text-2xl lg:text-3xl ${
-                      darkMode ? 'text-white' : 'text-slate-900'
-                    }`}
-                  >
-                    Modern Web Application
-                  </h3>
-                  <p
-                    className={`mt-3 text-sm leading-relaxed sm:mt-4 sm:text-base lg:mt-5 ${
-                      darkMode ? 'text-gray-400' : 'text-slate-600'
-                    }`}
-                  >
-                    Scalable premium application with futuristic UI and smooth animations.
+                <div className="absolute -right-4 -top-4 text-[80px] font-black text-white/[0.03] transition-all duration-500 group-hover:text-white/[0.06]">
+                  {skill.icon}
+                </div>
+                <div className="relative z-10">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#7DF9FF]/15 to-[#A78BFA]/15 text-[#7DF9FF] text-xl border border-white/8">
+                    {skill.icon}
+                  </div>
+                  <h3 className="font-['Syne'] text-lg font-bold text-white">{skill.name}</h3>
+                  <p className="mt-1.5 font-['DM_Sans'] text-xs text-white/40">{skill.desc}</p>
+                </div>
+
+                {/* Skill bar */}
+                <div className="relative z-10 mt-5">
+                  <div className="h-[2px] w-full overflow-hidden rounded-full bg-white/8">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${skills.find((s) => s.name === skill.name)?.level ?? 85}%` }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.2, delay: 0.3 + i * 0.07, ease: 'easeOut' }}
+                      className="h-full rounded-full bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA]"
+                    />
+                  </div>
+                  <p className="mt-2 text-right font-['DM_Sans'] text-[10px] text-white/30">
+                    {skills.find((s) => s.name === skill.name)?.level ?? 85}%
                   </p>
                 </div>
               </motion.div>
@@ -420,152 +643,212 @@ export default function Portfolio2026() {
         </div>
       </section>
 
-      {/* ─── EXPERIENCE ─── */}
-      <section id="experience" className="relative px-4 py-16 sm:px-6 sm:py-24 lg:py-36">
-        {/* Centre timeline line — desktop only */}
-        <div className="absolute left-1/2 top-0 hidden h-full w-[2px] -translate-x-1/2 bg-gradient-to-b from-cyan-400 via-purple-500 to-blue-500 opacity-40 md:block" />
-
+      {/* ════════════════════════════════
+          PROJECTS
+      ════════════════════════════════ */}
+      <section id="projects" className="px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-16 text-center sm:mb-20 lg:mb-28">
-            <p className="text-xs uppercase tracking-[0.45em] text-cyan-300 sm:text-sm">
-              Experience Timeline
-            </p>
-            <h2
-              className={`mt-4 text-4xl font-black leading-[0.9] sm:mt-6 sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-4"
+          >
+            <SectionLabel>Featured Work</SectionLabel>
+          </motion.div>
+          <div className="mt-6 flex items-end justify-between">
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="font-['Syne'] text-4xl font-black text-white sm:text-5xl lg:text-6xl"
             >
-              My Professional Journey
-            </h2>
-            <p
-              className={`mx-auto mt-5 max-w-3xl text-base leading-relaxed sm:mt-8 sm:text-lg lg:text-xl ${
-                darkMode ? 'text-gray-400' : 'text-slate-600'
-              }`}
-            >
-              Each stage represents a different milestone in my development career and technical growth.
-            </p>
+              Projects
+            </motion.h2>
           </div>
 
-          <div className="relative space-y-10 sm:space-y-16 lg:space-y-28">
+          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                year: '2025 - Present',
-                role: 'Software Engineer',
-                company: 'Clover Infotech Pvt. Ltd. — Client: HDFC Bank',
-                description:
-                  'Leading the development of an in-house Mutual Fund and Bond Trading platform used by 4000+ active users. Developed and maintained modules for Mutual Fund and Bond buy/sell transactions, including multiple investment and transaction forms. Implemented SWIFT payment integration for seamless transaction amount transfers after Mutual Fund and Bond purchases. Enhanced the platform by introducing combined SWIFT generation, enabling multiple transactions to generate a single SWIFT message instead of separate messages. Collaborated closely with Business Analysts and Product teams to gather requirements and deliver new features. Managed bug fixes, production support, and feature enhancements based on business needs. Integrated third-party Email APIs for automated transaction notifications. Worked extensively on both Windows and Web Applications using C#, .NET Core, ASP.NET MVC, Windows Forms, and SQL Server while ensuring high performance, scalability, and smooth transaction processing.',
-                align: 'right',
-                gradient: 'from-purple-500 to-blue-500',
-                skills: ['C#', '.NET Core', 'ASP.NET MVC', 'SQL Server', 'Windows Forms', 'React', 'REST API', 'SWIFT Integration'],
+                title: 'Mutual Fund Trading Platform',
+                tag: 'Fintech · HDFC Bank',
+                desc: 'In-house platform for 4000+ active users handling Mutual Fund & Bond buy/sell with SWIFT payment integration.',
+                gradient: 'from-[#7DF9FF]/20 to-[#A78BFA]/10',
+                accentFrom: '#7DF9FF',
+                accentTo: '#A78BFA',
+                skills: ['C#', '.NET Core', 'React', 'SQL Server', 'SWIFT'],
+                size: 'lg',
               },
               {
-                year: '2024 - 2025',
-                role: 'Software Engineer',
-                company: 'Sodel Software Solutions Private Limited',
-                description:
-                  'Developed a dynamic assessment platform in the E-Learning domain using ASP.NET Web Forms, Entity Framework, JavaScript, AJAX, jQuery, and MySQL. Built responsive and data-driven modules for assessment management, improving user experience and system efficiency. Implemented real-time question counting and percentage tracking for accurate assessment results. Designed and integrated custom authentication and authorization middleware supporting Google and Microsoft login using secure key and private key encryption. Configured Google Console and Microsoft Console for seamless API integrations and authentication workflows. Implemented multithreading in C# and ASP.NET for large-scale report generation, enabling asynchronous processing of 1,000–10,000+ records without blocking the UI or causing HTTP 500 errors. Reduced report generation time by over 80% and improved system stability. Optimized more than 15 application pages by improving code flow, eliminating unnecessary loops, and enhancing execution performance by 25%.',
-                align: 'left',
-                gradient: 'from-blue-500 to-cyan-500',
-                skills: ['ASP.NET', 'C#', 'Entity Framework', 'JavaScript', 'AJAX', 'jQuery', 'MySQL', 'Multithreading', 'Authentication', 'REST API'],
+                title: 'E-Learning Assessment Engine',
+                tag: 'EdTech · Assessment Platform',
+                desc: 'Dynamic assessment platform with multithreaded report generation for 10k+ records and OAuth integrations.',
+                gradient: 'from-[#A78BFA]/20 to-[#F472B6]/10',
+                accentFrom: '#A78BFA',
+                accentTo: '#F472B6',
+                skills: ['ASP.NET', 'MySQL', 'C#', 'AJAX'],
+                size: 'md',
               },
               {
-                year: '2022 - 2024',
-                role: 'Software Developer',
-                company: 'Osource Global Pvt Ltd',
-                description:
-                  'Worked on multiple HRMS applications using .NET Framework, .NET Core, ASP.NET, and Oracle SQL. Successfully migrated three HRMS projects from .NET Framework 4.0 to 4.8, improving system compatibility, optimization, and application stability while reducing system errors by 50%. Enhanced application performance by optimizing page loading time from 2–3 minutes to 5–6 seconds, resulting in improved user experience, increased engagement, and reduced bounce rates. Developed and integrated multiple RESTful APIs using .NET Core to enable seamless communication and data exchange between various HRMS modules. Worked extensively with Oracle SQL, including optimized stored procedures and database views to improve system efficiency, scalability, and data integrity. Contributed to building a modern, scalable, and maintainable HRMS architecture.',
-                align: 'right',
-                gradient: 'from-purple-500 to-fuchsia-500',
-                skills: ['.NET Framework', '.NET Core', 'ASP.NET', 'Oracle SQL', 'REST API', 'C#', 'Performance Optimization', 'HRMS'],
+                title: 'HRMS Migration & Optimisation',
+                tag: 'Enterprise · HRMS',
+                desc: 'Migrated 3 HRMS apps from .NET 4.0→4.8. Page load cut from 3 min to 5 seconds.',
+                gradient: 'from-[#34D399]/20 to-[#7DF9FF]/10',
+                accentFrom: '#34D399',
+                accentTo: '#7DF9FF',
+                skills: ['.NET Core', 'Oracle SQL', 'REST API'],
+                size: 'md',
               },
-              {
-                year: '2022',
-                role: 'Junior Software Engineer',
-                company: 'Greytrix India Pvt Ltd',
-                description:
-                  'Contributed to the development of a CRM application using ASP.NET MVC, focusing on efficient data management and seamless user experience. Worked with Git and GitLab for version control, collaboration, and issue tracking. Participated in migrating the application to modern technologies using Node.js and React.js, improving scalability, application performance, and maintainability. Collaborated with the development team to implement new features, fix bugs, and optimize existing modules for better system efficiency.',
-                align: 'left',
-                gradient: 'from-cyan-500 to-blue-500',
-                skills: ['ASP.NET MVC', 'React.js', 'Node.js', 'Git', 'GitLab', 'HTML', 'CSS', 'JavaScript'],
-              },
-            ].map((item, index) => (
+            ].map((project, i) => (
+              <motion.div
+                key={project.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -8 }}
+                className={`group relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm transition-all duration-300 hover:border-white/15 ${
+                  i === 0 ? 'md:col-span-2 lg:col-span-1' : ''
+                }`}
+              >
+                {/* Gradient preview area */}
+                <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${project.gradient}`}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                      className="h-24 w-24 rounded-full blur-3xl opacity-40"
+                      style={{ background: `radial-gradient(${project.accentFrom}, ${project.accentTo})` }}
+                    />
+                  </div>
+                  <div className="absolute right-4 top-4">
+                    <span
+                      className="rounded-full px-3 py-1 font-['DM_Sans'] text-[10px] font-semibold uppercase tracking-wider text-white/80 border"
+                      style={{ borderColor: `${project.accentFrom}40`, background: `${project.accentFrom}15` }}
+                    >
+                      {project.tag}
+                    </span>
+                  </div>
+                  {/* Decorative lines */}
+                  <svg className="absolute inset-0 h-full w-full opacity-10" viewBox="0 0 300 200">
+                    <line x1="0" y1="100" x2="300" y2="100" stroke="white" strokeWidth="0.5" strokeDasharray="4 8" />
+                    <line x1="150" y1="0" x2="150" y2="200" stroke="white" strokeWidth="0.5" strokeDasharray="4 8" />
+                    <circle cx="150" cy="100" r="40" stroke="white" strokeWidth="0.5" fill="none" />
+                  </svg>
+                </div>
+
+                <div className="p-6">
+                  <h3 className="font-['Syne'] text-xl font-bold text-white">{project.title}</h3>
+                  <p className="mt-3 font-['DM_Sans'] text-sm leading-relaxed text-white/50">{project.desc}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {project.skills.map((s) => (
+                      <span
+                        key={s}
+                        className="rounded-full border border-white/8 bg-white/4 px-3 py-1 font-['DM_Sans'] text-[11px] text-white/50"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════
+          EXPERIENCE
+      ════════════════════════════════ */}
+      <section id="experience" className="relative px-4 py-24 sm:px-6 lg:py-36">
+        {/* Centre line */}
+        <div className="absolute left-1/2 top-0 hidden h-full w-[1px] -translate-x-1/2 bg-gradient-to-b from-transparent via-white/10 to-transparent md:block" />
+
+        <div className="mx-auto max-w-7xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-4 text-center"
+          >
+            <SectionLabel>Experience Timeline</SectionLabel>
+          </motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="mt-6 text-center font-['Syne'] text-4xl font-black text-white sm:text-5xl lg:text-6xl xl:text-7xl"
+          >
+            My Professional Journey
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mx-auto mt-5 max-w-2xl text-center font-['DM_Sans'] text-base text-white/40 lg:text-lg"
+          >
+            Each role shaped a different dimension of my engineering craft.
+          </motion.p>
+
+          <div className="relative mt-20 space-y-10 md:space-y-16 lg:space-y-24">
+            {experiences.map((item, index) => (
               <motion.div
                 key={item.year}
-                initial={{ opacity: 0, y: 60 }}
+                initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: index * 0.1 }}
                 viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 className={`relative flex ${
                   item.align === 'left' ? 'md:justify-start' : 'md:justify-end'
                 }`}
               >
-                {/* Timeline dot — tablet+ */}
-                <div className="absolute left-1/2 top-16 hidden -translate-x-1/2 md:block">
+                {/* Timeline dot */}
+                <div className="absolute left-1/2 top-10 hidden -translate-x-1/2 md:block">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r ${item.gradient} shadow-[0_0_40px_rgba(139,92,246,0.7)]`}
-                  >
-                    <div className="h-4 w-4 rounded-full bg-white" />
-                  </div>
+                    className={`h-3 w-3 rounded-full bg-gradient-to-r ${item.gradient} shadow-[0_0_12px_rgba(125,249,255,0.6)]`}
+                  />
                 </div>
 
                 <motion.div
-                  whileHover={{ y: -10, scale: 1.02 }}
-                  className={`group relative w-full overflow-hidden rounded-[28px] p-6 backdrop-blur-3xl transition-all duration-500 sm:rounded-[36px] sm:p-8 md:w-[46%] lg:rounded-[42px] lg:p-10 ${
-                    darkMode
-                      ? 'border border-white/10 bg-white/[0.05] hover:border-cyan-400/30'
-                      : 'border border-slate-200 bg-white shadow-2xl shadow-slate-200/50'
-                  }`}
+                  whileHover={{ y: -6 }}
+                  className="group relative w-full overflow-hidden rounded-2xl border border-white/8 bg-white/3 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/15 hover:bg-white/5 sm:p-8 md:w-[46%]"
                 >
+                  {/* Hover gradient glow */}
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition duration-500 group-hover:opacity-10`}
+                    className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-5`}
                   />
 
                   <div className="relative z-10">
-                    <div className="flex items-start justify-between gap-4">
+                    {/* Year badge */}
+                    <div
+                      className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${item.gradient} px-4 py-1.5 font-['DM_Sans'] text-xs font-bold tracking-wider text-[#080810]`}
+                    >
+                      {item.year}
+                    </div>
+
+                    {/* Company */}
+                    <div className="mt-5 flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <div
-                          className={`inline-flex rounded-full bg-gradient-to-r ${item.gradient} px-4 py-2 text-xs font-bold tracking-[0.2em] text-white shadow-lg sm:px-5 sm:text-sm`}
-                        >
-                          {item.year}
-                        </div>
-                        <h3
-                          className={`mt-4 text-2xl font-black sm:mt-6 sm:text-3xl lg:text-4xl ${
-                            darkMode ? 'text-white' : 'text-slate-900'
-                          }`}
-                        >
+                        <h3 className="font-['Syne'] text-2xl font-black text-white sm:text-3xl">
                           {item.role}
                         </h3>
-                        <p className="mt-2 text-base font-semibold text-cyan-400 sm:mt-3 sm:text-xl lg:text-2xl">
+                        <p
+                          className={`mt-1.5 font-['Syne'] text-base font-semibold bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent sm:text-lg`}
+                        >
                           {item.company}
                         </p>
-                      </div>
-                      <div
-                        className={`hidden shrink-0 rounded-3xl bg-gradient-to-br ${item.gradient} p-4 text-2xl text-white shadow-[0_0_40px_rgba(139,92,246,0.45)] sm:flex lg:p-5 lg:text-3xl`}
-                      >
-                        ✦
+                        <p className="mt-0.5 font-['DM_Sans'] text-sm text-white/30">{item.client}</p>
                       </div>
                     </div>
 
-                    <p
-                      className={`mt-6 text-sm leading-relaxed sm:mt-8 sm:text-base lg:text-lg ${
-                        darkMode ? 'text-gray-400' : 'text-slate-600'
-                      }`}
-                    >
+                    <p className="mt-5 font-['DM_Sans'] text-sm leading-relaxed text-white/50 sm:text-base">
                       {item.description}
                     </p>
 
-                    <div className="mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3 lg:gap-4">
+                    <div className="mt-6 flex flex-wrap gap-2">
                       {item.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className={`${
-                            darkMode
-                              ? 'border border-white/10 bg-white/5 text-cyan-300'
-                              : 'border border-slate-200 bg-slate-100 text-cyan-700'
-                          } rounded-full px-3 py-2 text-xs font-medium backdrop-blur-xl sm:px-5 sm:py-3 sm:text-sm`}
-                        >
-                          {skill}
-                        </span>
+                        <Badge key={skill}>{skill}</Badge>
                       ))}
                     </div>
                   </div>
@@ -576,150 +859,152 @@ export default function Portfolio2026() {
         </div>
       </section>
 
-      {/* ─── CONTACT ─── */}
-      <section id="contact" className="px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
-        <div className="mx-auto grid max-w-7xl gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-10">
-
-          {/* Left Card */}
+      {/* ════════════════════════════════
+          CONTACT
+      ════════════════════════════════ */}
+      <section id="contact" className="px-4 py-24 sm:px-6 lg:py-36">
+        <div className="mx-auto max-w-7xl">
           <motion.div
-            whileHover={{ y: -6 }}
-            className={`${
-              darkMode
-                ? 'border border-white/10 bg-white/5'
-                : 'border border-slate-200 bg-white shadow-2xl shadow-slate-200/40'
-            } relative overflow-hidden rounded-[28px] p-6 backdrop-blur-3xl sm:rounded-[36px] sm:p-10 lg:rounded-[48px] lg:p-12`}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-4"
           >
-            <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl lg:h-48 lg:w-48" />
-
-            <p className="relative z-10 text-xs uppercase tracking-[0.3em] text-cyan-300 sm:text-sm">
-              Hire Me
-            </p>
-
-            <h2
-              className={`relative z-10 mt-6 text-3xl font-black leading-tight sm:text-4xl lg:text-5xl xl:text-6xl ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
-            >
-              Let's Build Amazing Products Together
-            </h2>
-
-            <p
-              className={`relative z-10 mt-5 text-sm leading-relaxed sm:mt-8 sm:text-base lg:text-lg ${
-                darkMode ? 'text-gray-400' : 'text-slate-600'
-              }`}
-            >
-              I'm available for freelance projects, full-time opportunities, and building scalable
-              modern web applications using React.js, .NET Core, Node.js, MongoDB, SQL Server,
-              MySQL, and Oracle Database.
-            </p>
-
-            <a
-              href="mailto:yourmail@gmail.com?subject=Hiring%20Inquiry"
-              className="relative z-10 mt-8 inline-flex items-center justify-center rounded-xl bg-cyan-500 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-cyan-400 sm:mt-10 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-lg"
-            >
-              Hire Me
-            </a>
-
-            <div className="relative z-10 mt-6 flex flex-wrap gap-2 sm:mt-8 sm:gap-3 lg:mt-10">
-              {['React.js Development', '.NET Core APIs', 'Full Stack Development', 'Database Management'].map(
-                (service) => (
-                  <div
-                    key={service}
-                    className={`${
-                      darkMode
-                        ? 'border border-white/10 bg-white/5 text-cyan-300'
-                        : 'border border-slate-200 bg-slate-100 text-cyan-700'
-                    } rounded-full px-4 py-2 text-xs font-medium backdrop-blur-xl sm:px-5 sm:py-2.5 sm:text-sm`}
-                  >
-                    {service}
-                  </div>
-                )
-              )}
-            </div>
-
-            <div className="relative z-10 mt-8 flex items-center gap-3 sm:mt-12 lg:mt-12">
-              <div className="flex h-4 w-4 items-center justify-center rounded-full bg-green-400 shadow-[0_0_16px_rgba(74,222,128,0.8)] sm:h-5 sm:w-5">
-                <div className="h-1.5 w-1.5 rounded-full bg-white sm:h-2 sm:w-2" />
-              </div>
-              <p className={`text-base font-semibold sm:text-lg ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                Available for New Projects
-              </p>
-            </div>
+            <SectionLabel>Get In Touch</SectionLabel>
           </motion.div>
 
-          {/* Right Card */}
+          {/* Big CTA headline */}
           <motion.div
-            whileHover={{ y: -6 }}
-            className={`${
-              darkMode
-                ? 'border border-white/10 bg-white/5'
-                : 'border border-slate-200 bg-white shadow-2xl shadow-slate-200/40'
-            } relative overflow-hidden rounded-[28px] p-6 backdrop-blur-3xl sm:rounded-[36px] sm:p-10 lg:rounded-[48px] lg:p-12`}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="mt-8 overflow-hidden rounded-3xl border border-white/8 bg-white/3 p-8 backdrop-blur-sm sm:p-12 lg:p-16"
           >
-            <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-purple-500/10 blur-3xl lg:h-48 lg:w-48" />
+            <div className="relative">
+              <Orb className="right-0 top-0 h-[300px] w-[300px] bg-[#7DF9FF]/8" />
+              <Orb className="bottom-0 left-0 h-[200px] w-[200px] bg-[#A78BFA]/8" />
 
-            <h3
-              className={`relative z-10 text-2xl font-black sm:text-3xl lg:text-4xl ${
-                darkMode ? 'text-white' : 'text-slate-900'
-              }`}
-            >
-              Contact Details
-            </h3>
-
-            <div className="relative z-10 mt-8 space-y-6 sm:mt-10 sm:space-y-8 lg:mt-12">
-              {/* Email */}
-              <div>
-                <p className={`text-xs uppercase tracking-[0.25em] sm:text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
-                  Email Address
-                </p>
-                <a
-                  href="mailto:m.rajbhar1235@gmail.com"
-                  className={`mt-2 block text-lg font-semibold transition-colors hover:text-cyan-400 sm:mt-3 sm:text-xl lg:text-2xl ${
-                    darkMode ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  m.rajbhar1235@gmail.com
-                </a>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <p className={`text-xs uppercase tracking-[0.25em] sm:text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
-                  Phone Number
-                </p>
-                <h4 className={`mt-2 text-lg font-semibold sm:mt-3 sm:text-xl lg:text-2xl ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  +91 7208955201
-                </h4>
-              </div>
-
-              {/* Location */}
-              <div>
-                <p className={`text-xs uppercase tracking-[0.25em] sm:text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
-                  Location
-                </p>
-                <h4 className={`mt-2 text-lg font-semibold sm:mt-3 sm:text-xl lg:text-2xl ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                  Mumbai, India
-                </h4>
-              </div>
-
-              {/* Availability */}
-              <div>
-                <p className={`text-xs uppercase tracking-[0.25em] sm:text-sm ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
-                  Availability
-                </p>
-                <div className="mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
-                  <div className="flex h-4 w-4 items-center justify-center rounded-full bg-green-400 shadow-[0_0_16px_rgba(74,222,128,0.8)] sm:h-5 sm:w-5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-white sm:h-2 sm:w-2" />
-                  </div>
-                  <p className={`text-base font-semibold sm:text-lg lg:text-xl ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                    Available for Freelance & Full Time
+              <div className="relative z-10 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+                <div>
+                  <h2 className="font-['Syne'] text-4xl font-black leading-[1.1] text-white sm:text-5xl lg:text-6xl">
+                    Let's build something{' '}
+                    <span className="bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA] bg-clip-text text-transparent">
+                      extraordinary
+                    </span>{' '}
+                    together.
+                  </h2>
+                  <p className="mt-6 max-w-lg font-['DM_Sans'] text-base leading-relaxed text-white/50 lg:text-lg">
+                    Available for full-time roles and freelance projects. I bring 4+ years of
+                    .NET, React, and database expertise to every engagement.
                   </p>
+                  <div className="mt-8 flex flex-wrap gap-2">
+                    {['React.js Development', '.NET Core APIs', 'Full Stack Development', 'Database Management'].map((s) => (
+                      <Badge key={s}>{s}</Badge>
+                    ))}
+                  </div>
+                  <div className="mt-10 flex flex-wrap gap-4">
+                    <a
+                      href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                      className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#7DF9FF] to-[#A78BFA] px-8 py-4 font-['DM_Sans'] text-sm font-semibold text-[#080810] shadow-[0_0_30px_rgba(125,249,255,0.25)] transition-all duration-300 hover:shadow-[0_0_50px_rgba(125,249,255,0.4)] hover:scale-105"
+                    >
+                      Send a Message
+                      <motion.span animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                        <ArrowRight />
+                      </motion.span>
+                    </a>
+                    <a
+                      href="/resume.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-2xl border border-white/12 bg-white/5 px-8 py-4 font-['DM_Sans'] text-sm font-semibold text-white/70 backdrop-blur-sm transition-all duration-300 hover:border-white/25 hover:text-white"
+                    >
+                      Download CV <ExternalLink />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Contact details */}
+                <div className="flex flex-col justify-center space-y-6">
+                  {[
+                    { label: 'Email', value: 'm.rajbhar1235@gmail.com', href: 'mailto:m.rajbhar1235@gmail.com', isLink: true },
+                    { label: 'Phone', value: '+91 7208955201', href: 'tel:+917208955201', isLink: true },
+                    { label: 'Location', value: 'Mumbai, India', isLink: false },
+                  ].map((detail) => (
+                    <div
+                      key={detail.label}
+                      className="rounded-2xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm transition-all hover:border-white/15"
+                    >
+                      <p className="font-['DM_Sans'] text-xs uppercase tracking-[0.2em] text-white/30">
+                        {detail.label}
+                      </p>
+                      {detail.isLink ? (
+                        <a
+                          href={detail.href}
+                          className="mt-2 block font-['Syne'] text-base font-semibold text-white transition-colors hover:text-[#7DF9FF] sm:text-lg"
+                        >
+                          {detail.value}
+                        </a>
+                      ) : (
+                        <p className="mt-2 font-['Syne'] text-base font-semibold text-white sm:text-lg">
+                          {detail.value}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Availability badge */}
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#34D399]/20 bg-[#34D399]/5 p-5">
+                    <span className="relative flex h-3 w-3">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#34D399] opacity-50" />
+                      <span className="relative inline-flex h-3 w-3 rounded-full bg-[#34D399]" />
+                    </span>
+                    <div>
+                      <p className="font-['Syne'] text-sm font-bold text-[#34D399]">Open to Opportunities</p>
+                      <p className="font-['DM_Sans'] text-xs text-white/40">Freelance & full-time</p>
+                    </div>
+                  </div>
+
+                  {/* Socials */}
+                  <div className="flex gap-3">
+                    {[
+                      { Icon: GithubIcon, href: 'https://github.com/Mrajbhar', label: 'GitHub' },
+                      { Icon: LinkedinIcon, href: 'https://www.linkedin.com/in/mohan-rajbhar/', label: 'LinkedIn' },
+                      { Icon: LeetcodeIcon, href: 'https://leetcode.com/u/Mrajbhar/', label: 'LeetCode' },
+                    ].map(({ Icon, href, label }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={label}
+                        className="group flex h-12 w-12 items-center justify-center rounded-xl border border-white/8 bg-white/4 text-white/40 transition-all hover:border-[#7DF9FF]/30 hover:bg-[#7DF9FF]/8 hover:text-[#7DF9FF]"
+                      >
+                        <Icon />
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/6 px-4 py-8 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#7DF9FF] to-[#A78BFA]">
+              <span className="font-['Syne'] text-xs font-black text-[#080810]">MR</span>
+            </div>
+            <span className="font-['DM_Sans'] text-sm text-white/30">Shreemohan Rajbhar</span>
+          </div>
+          <p className="font-['DM_Sans'] text-xs text-white/20">
+            © 2026 · Crafted with care in Mumbai
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
