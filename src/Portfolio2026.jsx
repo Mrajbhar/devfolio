@@ -105,6 +105,7 @@ export default function Portfolio2026() {
     { name: 'C#', level: 95, color: '#A78BFA' },
   ];
 
+  
   const experiences = [
     {
       year: '2025 – Present',
@@ -647,114 +648,124 @@ export default function Portfolio2026() {
           PROJECTS
       ════════════════════════════════ */}
       <section id="projects" className="px-4 py-24 sm:px-6 lg:py-36">
-        <div className="mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-4"
-          >
-            <SectionLabel>Featured Work</SectionLabel>
-          </motion.div>
-          <div className="mt-6 flex items-end justify-between">
-            <motion.h2
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="font-['Syne'] text-4xl font-black text-white sm:text-5xl lg:text-6xl"
-            >
-              Projects
-            </motion.h2>
-          </div>
+  <div className="mx-auto max-w-7xl">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="mb-4"
+    >
+      <SectionLabel>Featured Work</SectionLabel>
+    </motion.div>
+    <div className="mt-6 flex items-end justify-between">
+      <motion.h2
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.1 }}
+        className="font-['Syne'] text-4xl font-black text-white sm:text-5xl lg:text-6xl"
+      >
+        Projects
+      </motion.h2>
+    </div>
 
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: 'Mutual Fund Trading Platform',
-                tag: 'Fintech · HDFC Bank',
-                desc: 'In-house platform for 4000+ active users handling Mutual Fund & Bond buy/sell with SWIFT payment integration.',
-                gradient: 'from-[#7DF9FF]/20 to-[#A78BFA]/10',
-                accentFrom: '#7DF9FF',
-                accentTo: '#A78BFA',
-                skills: ['C#', '.NET Core', 'React', 'SQL Server', 'SWIFT'],
-                size: 'lg',
-              },
-              {
-                title: 'E-Learning Assessment Engine',
-                tag: 'EdTech · Assessment Platform',
-                desc: 'Dynamic assessment platform with multithreaded report generation for 10k+ records and OAuth integrations.',
-                gradient: 'from-[#A78BFA]/20 to-[#F472B6]/10',
-                accentFrom: '#A78BFA',
-                accentTo: '#F472B6',
-                skills: ['ASP.NET', 'MySQL', 'C#', 'AJAX'],
-                size: 'md',
-              },
-              {
-                title: 'HRMS Migration & Optimisation',
-                tag: 'Enterprise · HRMS',
-                desc: 'Migrated 3 HRMS apps from .NET 4.0→4.8. Page load cut from 3 min to 5 seconds.',
-                gradient: 'from-[#34D399]/20 to-[#7DF9FF]/10',
-                accentFrom: '#34D399',
-                accentTo: '#7DF9FF',
-                skills: ['.NET Core', 'Oracle SQL', 'REST API'],
-                size: 'md',
-              },
-            ].map((project, i) => (
-              <motion.div
-                key={project.title}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -8 }}
-                className={`group relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm transition-all duration-300 hover:border-white/15 ${
-                  i === 0 ? 'md:col-span-2 lg:col-span-1' : ''
-                }`}
+    <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {[
+      {
+  title: 'E-Commerce Application',
+  tag: 'Retail · Full Stack',
+  desc: 'Scalable e-commerce platform with product catalog, cart, and secure checkout. Built using MERN stack with JWT authentication and payment gateway integration.',
+  gradient: 'from-[#F59E0B]/20 to-[#10B981]/10',
+  accentFrom: '#F59E0B',
+  accentTo: '#10B981',
+  skills: ['ReactJS', 'NodeJS', 'MongoDB', 'ExpressJS'],
+  size: 'lg',
+  image: '/E-commerce.png',
+  link: 'https://markethub-app.vercel.app/'
+},
+    {
+  title: 'ViewBlog - Full Stack Blog Platform',
+  tag: 'MERN Stack · Content Management',
+  desc: 'Modern blogging platform built with React.js, Node.js, Express.js, and MongoDB featuring authentication, article publishing, image uploads, dark/light mode, and responsive design.',
+  gradient: 'from-[#3B82F6]/20 to-[#06B6D4]/10',
+  accentFrom: '#3B82F6',
+  accentTo: '#06B6D4',
+  skills: [
+    'React.js',
+    'Node.js',
+    'Express.js',
+    'MongoDB',
+    'Tailwind CSS',
+    'JWT'
+  ],
+  size: 'md',
+  image: '/Blog.png',
+  link: 'https://blog-applications.onrender.com'
+},
+        {
+          title: 'HRMS Migration & Optimisation',
+          tag: 'Enterprise · HRMS',
+          desc: 'Migrated 3 HRMS apps from .NET 4.0→4.8. Page load cut from 3 min to 5 seconds.',
+          gradient: 'from-[#34D399]/20 to-[#7DF9FF]/10',
+          accentFrom: '#34D399',
+          accentTo: '#7DF9FF',
+          skills: ['.NET Core', 'Oracle SQL', 'REST API'],
+          size: 'md',
+          image: '/images/hrms.png',
+          link: 'https://example.com/hrms'
+        },
+      ].map((project, i) => (
+        <motion.a
+          href={project.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          key={project.title}
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.1 }}
+          whileHover={{ y: -8 }}
+          className={`group relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm transition-all duration-300 hover:border-white/15 ${
+            i === 0 ? 'md:col-span-2 lg:col-span-1' : ''
+          }`}
+        >
+          {/* Gradient preview area with image */}
+          <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${project.gradient}`}>
+            <img
+              src={project.image}
+              alt={project.title}
+              className="absolute inset-0 h-full w-full object-cover opacity-70"
+            />
+            <div className="absolute right-4 top-4">
+              <span
+                className="rounded-full px-3 py-1 font-['DM_Sans'] text-[10px] font-semibold uppercase tracking-wider text-white/80 border"
+                style={{ borderColor: `${project.accentFrom}40`, background: `${project.accentFrom}15` }}
               >
-                {/* Gradient preview area */}
-                <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${project.gradient}`}>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div
-                      className="h-24 w-24 rounded-full blur-3xl opacity-40"
-                      style={{ background: `radial-gradient(${project.accentFrom}, ${project.accentTo})` }}
-                    />
-                  </div>
-                  <div className="absolute right-4 top-4">
-                    <span
-                      className="rounded-full px-3 py-1 font-['DM_Sans'] text-[10px] font-semibold uppercase tracking-wider text-white/80 border"
-                      style={{ borderColor: `${project.accentFrom}40`, background: `${project.accentFrom}15` }}
-                    >
-                      {project.tag}
-                    </span>
-                  </div>
-                  {/* Decorative lines */}
-                  <svg className="absolute inset-0 h-full w-full opacity-10" viewBox="0 0 300 200">
-                    <line x1="0" y1="100" x2="300" y2="100" stroke="white" strokeWidth="0.5" strokeDasharray="4 8" />
-                    <line x1="150" y1="0" x2="150" y2="200" stroke="white" strokeWidth="0.5" strokeDasharray="4 8" />
-                    <circle cx="150" cy="100" r="40" stroke="white" strokeWidth="0.5" fill="none" />
-                  </svg>
-                </div>
-
-                <div className="p-6">
-                  <h3 className="font-['Syne'] text-xl font-bold text-white">{project.title}</h3>
-                  <p className="mt-3 font-['DM_Sans'] text-sm leading-relaxed text-white/50">{project.desc}</p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {project.skills.map((s) => (
-                      <span
-                        key={s}
-                        className="rounded-full border border-white/8 bg-white/4 px-3 py-1 font-['DM_Sans'] text-[11px] text-white/50"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                {project.tag}
+              </span>
+            </div>
           </div>
-        </div>
-      </section>
+
+          <div className="p-6">
+            <h3 className="font-['Syne'] text-xl font-bold text-white">{project.title}</h3>
+            <p className="mt-3 font-['DM_Sans'] text-sm leading-relaxed text-white/50">{project.desc}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {project.skills.map((s) => (
+                <span
+                  key={s}
+                  className="rounded-full border border-white/8 bg-white/4 px-3 py-1 font-['DM_Sans'] text-[11px] text-white/50"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        </motion.a>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* ════════════════════════════════
           EXPERIENCE
