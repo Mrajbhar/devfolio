@@ -1,1 +1,71 @@
 @import "tailwindcss";
+
+/* ============================================================
+   THEME TOKENS â€” light + dark
+   Toggle by adding/removing `.dark` on <html>.
+   ============================================================ */
+:root {
+  /* page */
+  --bg: #f6f5f9;
+  --bg-soft: #ecebf2;
+  --ink: #0d0d14; /* primary text */
+  --ink-soft: rgba(13, 13, 20, 0.58);
+  --ink-faint: rgba(13, 13, 20, 0.4);
+  --ink-ghost: rgba(13, 13, 20, 0.22);
+  /* surfaces */
+  --surface: rgba(13, 13, 20, 0.04);
+  --surface-2: rgba(13, 13, 20, 0.06);
+  --border: rgba(13, 13, 20, 0.1);
+  --border-strong: rgba(13, 13, 20, 0.16);
+  --on-accent: #f6f5f9; /* text that sits on the cyan/violet gradient */
+  /* brand accents (same in both modes) */
+  --cyan: #1ba9bf;
+  --violet: #7c5cf0;
+  --pink: #e0509a;
+  --green: #1aa06a;
+}
+.dark {
+  --bg: #080810;
+  --bg-soft: #0d0d1a;
+  --ink: #ffffff;
+  --ink-soft: rgba(255, 255, 255, 0.55);
+  --ink-faint: rgba(255, 255, 255, 0.4);
+  --ink-ghost: rgba(255, 255, 255, 0.22);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --on-accent: #080810;
+  --cyan: #7df9ff;
+  --violet: #a78bfa;
+  --pink: #f472b6;
+  --green: #34d399;
+}
+
+/* Expose tokens to Tailwind v4 utilities (bg-bg, text-ink, border-border, etc.) */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-ink-ghost: var(--ink-ghost);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-bd: var(--border);
+  --color-bd-strong: var(--border-strong);
+  --color-on-accent: var(--on-accent);
+  --color-cyan: var(--cyan);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-green: var(--green);
+}
+
+html {
+  background: var(--bg);
+}
+body {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
+}
