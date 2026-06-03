@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   THEME TOKENS â€” light + dark
+   THEME TOKENS — light + dark
    Toggle by adding/removing `.dark` on <html>.
    ============================================================ */
 :root {
@@ -12,18 +12,28 @@
   --ink-soft: rgba(13, 13, 20, 0.58);
   --ink-faint: rgba(13, 13, 20, 0.4);
   --ink-ghost: rgba(13, 13, 20, 0.22);
+
   /* surfaces */
   --surface: rgba(13, 13, 20, 0.04);
   --surface-2: rgba(13, 13, 20, 0.06);
+  --surface-3: rgba(13, 13, 20, 0.09);
   --border: rgba(13, 13, 20, 0.1);
   --border-strong: rgba(13, 13, 20, 0.16);
-  --on-accent: #f6f5f9; /* text that sits on the cyan/violet gradient */
-  /* brand accents (same in both modes) */
+  --on-accent: #f6f5f9; /* text on the cyan/violet gradient */
+
+  /* brand accents */
   --cyan: #1ba9bf;
   --violet: #7c5cf0;
   --pink: #e0509a;
   --green: #1aa06a;
+  --amber: #d97706;
+
+  /* glows tuned per theme */
+  --glow-cyan: rgba(27, 169, 191, 0.22);
+  --glow-cyan-strong: rgba(27, 169, 191, 0.4);
+  --grid-line: rgba(13, 13, 20, 0.05);
 }
+
 .dark {
   --bg: #080810;
   --bg-soft: #0d0d1a;
@@ -31,18 +41,39 @@
   --ink-soft: rgba(255, 255, 255, 0.55);
   --ink-faint: rgba(255, 255, 255, 0.4);
   --ink-ghost: rgba(255, 255, 255, 0.22);
+
   --surface: rgba(255, 255, 255, 0.04);
   --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.1);
   --border: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.16);
   --on-accent: #080810;
+
   --cyan: #7df9ff;
   --violet: #a78bfa;
   --pink: #f472b6;
   --green: #34d399;
+  --amber: #fbbf24;
+
+  --glow-cyan: rgba(125, 249, 255, 0.25);
+  --glow-cyan-strong: rgba(125, 249, 255, 0.5);
+  --grid-line: rgba(255, 255, 255, 0.05);
 }
 
-/* Expose tokens to Tailwind v4 utilities (bg-bg, text-ink, border-border, etc.) */
+/* ── shared design primitives (theme-agnostic) ── */
+:root,
+.dark {
+  --radius-card: 24px;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 8px rgba(0, 0, 0, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.18);
+  --shadow-float: 0 40px 80px rgba(0, 0, 0, 0.3);
+  --grad-brand: linear-gradient(110deg, var(--cyan), var(--violet) 55%, var(--pink));
+}
+
+/* Expose tokens to Tailwind v4 utilities (bg-bg, text-ink, border-bd, etc.) */
 @theme inline {
   --color-bg: var(--bg);
   --color-bg-soft: var(--bg-soft);
@@ -52,6 +83,7 @@
   --color-ink-ghost: var(--ink-ghost);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-bd: var(--border);
   --color-bd-strong: var(--border-strong);
   --color-on-accent: var(--on-accent);
@@ -59,13 +91,117 @@
   --color-violet: var(--violet);
   --color-pink: var(--pink);
   --color-green: var(--green);
+  --color-amber: var(--amber);
 }
 
 html {
   background: var(--bg);
+  scroll-behavior: smooth;
 }
+
+/* Respect users who prefer no smooth scroll / heavy motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 body {
   transition:
     background-color 0.4s ease,
     color 0.4s ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Keyboard focus ring that matches the brand */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Branded selection */
+::selection {
+  background: var(--cyan);
+  color: var(--on-accent);
+}
+
+/* Branded, slim scrollbar (WebKit + Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
+  background-clip: content-box;
+}
+
+/* ── Reusable animations ── */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+@keyframes mesh-shift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, -3%, 0) scale(1.08);
+  }
+}
+.animate-mesh {
+  animation: mesh-shift 18s var(--ease-in-out-soft) infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Animated conic ring used behind avatar / accents */
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility: text gradient that follows brand */
+.text-grad-brand {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
