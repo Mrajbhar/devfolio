@@ -1,9 +1,3 @@
-// Tailwind CSS v4
-// npm install tailwindcss @tailwindcss/vite framer-motion
-// index.html <head>:
-//   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
-// src/index.css must contain the theme tokens (see index.css).
-
 import { useEffect, useRef, useState } from "react";
 import {
   motion,
@@ -18,9 +12,7 @@ import {
 
 const profileImage = "/profile.png";
 
-/* ─────────────────────────────────────────────
-   ICONS
-   ───────────────────────────────────────────── */
+
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
     <path d="M12 2C6.477 2 2 6.486 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.866-.014-1.7-2.782.605-3.369-1.344-3.369-1.344-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.31.678.92.678 1.855 0 1.338-.012 2.42-.012 2.75 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.486 17.523 2 12 2z" />
@@ -46,6 +38,18 @@ const ExternalLink = () => (
     <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
   </svg>
 );
+const LockIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <rect x="4" y="11" width="16" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 018 0v4" />
+  </svg>
+);
+const GraduationIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+    <path d="M22 10L12 5 2 10l10 5 10-5z" />
+    <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
+  </svg>
+);
 const SunIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-5 w-5">
     <circle cx="12" cy="12" r="4" />
@@ -62,10 +66,19 @@ const ArrowUp = () => (
     <path d="M12 19V5M5 12l7-7 7 7" />
   </svg>
 );
+const CopyIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <rect x="9" y="9" width="13" height="13" rx="2" />
+    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+  </svg>
+);
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
 
-/* ─────────────────────────────────────────────
-   TEXTURES & ATMOSPHERE
-   ───────────────────────────────────────────── */
+
 const noiseBg = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`;
 
 const Orb = ({ className, animated = false }) => (
@@ -75,7 +88,6 @@ const Orb = ({ className, animated = false }) => (
   />
 );
 
-/* Mouse-following spotlight glow layer for cards */
 function useSpotlight() {
   const ref = useRef(null);
   const onMouseMove = (e) => {
@@ -88,9 +100,7 @@ function useSpotlight() {
   return { ref, onMouseMove };
 }
 
-/* ─────────────────────────────────────────────
-   PRIMITIVES
-   ───────────────────────────────────────────── */
+
 const SectionLabel = ({ children }) => (
   <div className="inline-flex items-center gap-2 rounded-full border border-bd bg-surface px-4 py-1.5 backdrop-blur-sm">
     <span className="relative flex h-1.5 w-1.5">
@@ -109,7 +119,6 @@ const Badge = ({ children }) => (
   </span>
 );
 
-/* Magnetic button — subtly pulls toward the cursor (disabled w/ reduced motion) */
 function Magnetic({ children, strength = 0.35, className = "", ...rest }) {
   const ref = useRef(null);
   const reduce = useReducedMotion();
@@ -182,19 +191,30 @@ function CountUp({ value, suffix = "", duration = 1.6 }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   THEME
-   ───────────────────────────────────────────── */
+
 function useTheme() {
-  const [dark, setDark] = useState(true);
-  useEffect(() => {
-    const saved = localStorage.getItem("pf-theme");
-    setDark(saved ? saved === "dark" : true);
-  }, []);
+  const [dark, setDark] = useState(() => {
+    
+    if (typeof window === "undefined") return true;
+    try {
+      const saved = localStorage.getItem("pf-theme");
+      if (saved) return saved === "dark";
+      
+      return !window.matchMedia("(prefers-color-scheme: light)").matches;
+    } catch {
+      return true;
+    }
+  });
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("pf-theme", dark ? "dark" : "light");
+    try {
+      localStorage.setItem("pf-theme", dark ? "dark" : "light");
+    } catch {
+     
+    }
   }, [dark]);
+
   return { dark, toggle: () => setDark((d) => !d) };
 }
 
@@ -218,10 +238,44 @@ const ThemeToggle = ({ dark, toggle }) => (
   </button>
 );
 
+
+function useActiveSection(ids) {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    const visible = new Map();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => visible.set(e.target.id, e.isIntersecting));
+        for (let i = ids.length - 1; i >= 0; i--) {
+          if (visible.get(ids[i])) {
+            setActive(ids[i]);
+            return;
+          }
+        }
+      },
+      { rootMargin: "-30% 0px -60% 0px" },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+    return () => io.disconnect();
+  }, [ids]);
+  return active;
+}
+
+
+const CONTACT = {
+  email: "m.rajbhar1235@gmail.com",
+  phoneDisplay: "+91 72089 55301",
+  phoneHref: "tel:+917208955301",
+  location: "Mumbai, Maharashtra, India",
+};
+const MAILTO = `mailto:${CONTACT.email}?subject=Hiring%20Inquiry`;
+
 /* ══════════════════════════════════════════════════════════ */
 export default function Portfolio2026() {
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
   const [scrolled, setScrolled] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const { dark, toggle } = useTheme();
@@ -242,111 +296,126 @@ export default function Portfolio2026() {
     { id: "contact", label: "Contact" },
   ];
 
+  const activeSection = useActiveSection(navItems.map((n) => n.id));
+
   useEffect(() => {
+    let raf = 0;
     const onScroll = () => {
-      setScrolled(window.scrollY > 20);
-      setShowTop(window.scrollY > 800);
-      const sections = navItems.map((n) => document.getElementById(n.id));
-      const current = sections.findLast((s) => s && s.getBoundingClientRect().top <= 140);
-      if (current) setActiveSection(current.id);
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 20);
+        setShowTop(window.scrollY > 800);
+        raf = 0;
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
-  // Lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = mobileMenu ? "hidden" : "";
+    const onKey = (e) => {
+      if (e.key === "Escape") setMobileMenu(false);
+    };
+    if (mobileMenu) window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
     };
   }, [mobileMenu]);
 
+  
   const skills = [
-    { name: ".NET Core", level: 95, icon: "⬡", desc: "Enterprise APIs & microservices" },
-    { name: "ASP.NET MVC", level: 92, icon: "◈", desc: "Web apps & REST endpoints" },
-    { name: "React.js", level: 88, icon: "◎", desc: "Dynamic frontends & SPAs" },
-    { name: "Node.js", level: 82, icon: "◉", desc: "Server-side JS & tooling" },
-    { name: "SQL Server", level: 90, icon: "▣", desc: "Relational DBs & procedures" },
-    { name: "Oracle DB", level: 85, icon: "◆", desc: "Enterprise database systems" },
-    { name: "MongoDB", level: 80, icon: "◐", desc: "NoSQL & document stores" },
-    { name: "C#", level: 95, icon: "◑", desc: "Core language & patterns" },
+    { name: "C#", years: 4, icon: "◑", desc: "Core language across every role since 2022" },
+    { name: ".NET Core", years: 4, icon: "⬡", desc: "Web APIs, REST services & middleware" },
+    { name: "ASP.NET MVC", years: 4, icon: "◈", desc: "Web apps in banking, HRMS & e-learning" },
+    { name: "SQL Server", years: 4, icon: "▣", desc: "Queries, procedures & performance tuning" },
+    { name: "React.js", years: 3, icon: "◎", desc: "SPAs, hooks & reusable components" },
+    { name: "Node.js", years: 3, icon: "◉", desc: "Express APIs & CRM front-end migration" },
+    { name: "Oracle DB", years: 2, icon: "◆", desc: "Tuned stored procedures & views (HRMS)" },
+    { name: "MongoDB", years: 2, icon: "◐", desc: "Indexed schemas for full-stack projects" },
   ];
+  const maxYears = Math.max(...skills.map((s) => s.years));
 
   const services = [
     {
       title: "Full Stack Web Apps",
       icon: "◎",
-      desc: "End-to-end product builds with React frontends and .NET / Node back ends — auth, payments, and real-time features included.",
+      desc: "End-to-end product builds with React frontends and .NET Core / Node back ends — auth (JWT, OAuth), payments, and admin dashboards included.",
     },
     {
       title: "API & Systems Design",
       icon: "⬡",
-      desc: "Clean, versioned REST APIs, service layering, and database modelling built to scale from prototype to production.",
+      desc: "Clean, versioned REST APIs, service layering, and microservices architecture built to scale from prototype to production.",
     },
     {
       title: "Performance & Migration",
       icon: "▲",
-      desc: "Legacy modernisation and tuning — I've cut report times by 80% and page loads from minutes to seconds.",
+      desc: "Legacy modernisation and tuning — I've cut report times by 80%+ and page loads from 2–3 minutes to 5–6 seconds.",
     },
     {
       title: "Database Engineering",
       icon: "▣",
-      desc: "SQL Server, Oracle & MongoDB schema design, stored procedures, and query optimisation for data-heavy workloads.",
+      desc: "SQL Server, Oracle, MySQL & MongoDB schema design, stored procedures, and query optimisation for data-heavy workloads.",
     },
   ];
 
   const marquee = [
-    "C#", ".NET Core", "ASP.NET MVC", "React.js", "Node.js", "Express.js",
-    "SQL Server", "Oracle", "MongoDB", "Entity Framework", "REST APIs",
-    "Tailwind CSS", "Git", "SWIFT Integration", "Multithreading",
+    "C#", ".NET Core", "ASP.NET MVC", "Web API", "React.js", "Node.js",
+    "Express.js", "SQL Server", "Oracle", "MySQL", "MongoDB",
+    "Entity Framework", "LINQ", "REST APIs", "OAuth", "JWT",
+    "Multithreading", "SWIFT Integration", "Microservices",
+    "Tailwind CSS", "Bootstrap", "Git", "AWS",
   ];
 
   const experiences = [
     {
-      year: "2025 – Present",
-      role: "Software Engineer",
-      company: "Clover Infotech",
-      client: "Client: HDFC Bank",
+      year: "Jul 2025 – Present",
+      role: "Software Engineer · Lead Developer",
+      company: "HDFC Bank",
+      client: "via Clover Infotech · Navi Mumbai",
       description:
-        "Leading development of an in-house Mutual Fund & Bond Trading platform serving 4000+ active users. Implemented SWIFT payment integration, combined SWIFT generation, and third-party Email APIs for automated notifications.",
+        "Lead developer on a Mutual Fund & Bond Trading platform serving 4,000+ active users — owning the buy/sell transaction modules end to end. Built the ETF, Equity & Structured Notes modules for WealthFY Offshore and supported one of the platform's biggest go-lives in years. Redesigned SWIFT generation to batch transactions into consolidated messages, and shipped SWIFT payment settlement plus automated email confirmations on every purchase.",
       gradient: "from-cyan to-violet",
       align: "right",
-      skills: ["C#", ".NET Core", "ASP.NET MVC", "SQL Server", "Windows Forms", "React", "SWIFT"],
+      skills: ["C#", ".NET Core", "ASP.NET MVC", "Web API", "SQL Server", "Windows Forms", "SWIFT", "JavaScript"],
     },
     {
-      year: "2024 – 2025",
+      year: "May 2024 – Jun 2025",
       role: "Software Engineer",
       company: "Sodel Software Solutions",
-      client: "E-Learning Domain",
+      client: "E-Learning Domain · Navi Mumbai",
       description:
-        "Built a dynamic assessment platform with real-time tracking, Google/Microsoft OAuth, and multithreaded report generation for 10,000+ records — cutting report time by 80% and optimising 15+ pages by 25%.",
+        "Cut report load time by 80%+ and eliminated recurring HTTP 500 failures by moving 1,000–10,000+ record report generation onto background threads — replacing a synchronous flow that blocked the UI for 3–4 minutes. Built Google & Microsoft OAuth sign-in with custom auth middleware and key-based encryption, improved execution 25% across 15+ pages, and delivered a real-time assessment platform with live scoring.",
       gradient: "from-violet to-pink",
       align: "left",
-      skills: ["ASP.NET", "C#", "Entity Framework", "MySQL", "AJAX", "jQuery", "Multithreading"],
+      skills: ["C#", "ASP.NET", "Entity Framework", "Multithreading", "OAuth", "MySQL", "AJAX", "jQuery"],
     },
     {
-      year: "2022 – 2024",
+      year: "Nov 2022 – May 2024",
       role: "Software Developer",
       company: "Osource Global",
-      client: "HRMS Applications",
+      client: "HRMS Applications · Navi Mumbai",
       description:
-        "Migrated 3 HRMS projects from .NET 4.0 → 4.8, reducing errors by 50%. Optimised page load from 3 min → 5 sec. Built RESTful APIs and Oracle stored procedures for scalable HRMS architecture.",
+        "Reduced HRMS page load from 2–3 minutes to 5–6 seconds, lifting user satisfaction 70% and cutting bounce rate 25%. Migrated three HRMS products from .NET 4 to .NET 4.8, cutting system errors by 50% and improving stability 20%. Enabled cross-module data exchange by designing .NET Core REST APIs over tuned Oracle stored procedures and views.",
       gradient: "from-cyan to-green",
       align: "right",
-      skills: [".NET Framework", ".NET Core", "Oracle SQL", "REST API", "C#", "Performance"],
+      skills: ["C#", ".NET Core", "ASP.NET", "REST API", "Oracle SQL", "Performance Tuning"],
     },
     {
-      year: "2022",
+      year: "Apr 2022 – Oct 2022",
       role: "Junior Software Engineer",
       company: "Greytrix India",
-      client: "CRM Application",
+      client: "CRM Application · Navi Mumbai",
       description:
-        "Contributed to CRM development with ASP.NET MVC. Participated in migration to Node.js + React.js stack. Used Git/GitLab for version control and collaborated on feature delivery and bug fixes.",
+        "Contributed to CRM development on ASP.NET MVC and helped migrate the product front end to React.js and Node.js for improved scalability and performance, alongside feature delivery and bug fixes using Git/GitLab.",
       gradient: "from-pink to-violet",
       align: "left",
-      skills: ["ASP.NET MVC", "React.js", "Node.js", "Git", "GitLab", "JavaScript"],
+      skills: ["ASP.NET MVC", "React.js", "Node.js", "JavaScript", "Git", "GitLab"],
     },
   ];
 
@@ -358,7 +427,7 @@ export default function Portfolio2026() {
       gradient: "from-[#F59E0B]/20 to-[#10B981]/10",
       accentFrom: "#F59E0B",
       skills: ["ReactJS", "NodeJS", "MongoDB", "ExpressJS"],
-      image: "/E-commerce.png",
+      image: "/Markethub.jpg",
       link: "https://markethub-app.vercel.app/",
     },
     {
@@ -368,18 +437,48 @@ export default function Portfolio2026() {
       gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
       accentFrom: "#3B82F6",
       skills: ["React.js", "Node.js", "Express.js", "MongoDB", "Tailwind CSS", "JWT"],
-      image: "/Blog.png",
-      link: "https://blog-applications.onrender.com",
+      image: "/viewblog.jpg",
+      link: "https://viewblog.vercel.app/",
     },
     {
-      title: "HRMS Migration & Optimisation",
-      tag: "Enterprise · HRMS",
-      desc: "Migrated 3 HRMS apps from .NET 4.0 → 4.8. Page load cut from 3 minutes to 5 seconds with optimised Oracle procedures.",
-      gradient: "from-green/20 to-cyan/10",
-      accentFrom: "#34D399",
-      skills: [".NET Core", "Oracle SQL", "REST API"],
-      image: "/images/hrms.png",
-      link: "https://example.com/hrms",
+      title: "CareerCraft — Build Resumes and Prepare for Interviews",
+      tag: "MERN Stack",
+      desc: "Developed a full-stack resume builder and interview preparation platform using React.js, Node.js, Express.js, and MongoDB. The application allows users to create, edit, manage, and download resumes while practicing interview questions through an intuitive and responsive UI.",
+      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
+      accentFrom: "#3B82F6",
+      skills: ["React.js", "Node.js", "Express.js", "MongoDB", "Tailwind CSS", "JWT"],
+      image: "/CareerCraft.jpg",
+      link: "https://career-craft-pink-eight.vercel.app/",
+    },
+    {
+      title: "Prycely — E-Commerce Application",
+      tag: ".NET Microservices",
+      desc: "Developed a scalable full-stack e-commerce application using React.js, ASP.NET Core, MongoDB, and a microservices architecture. The platform enables users to browse products, manage shopping carts, place orders, and securely complete payments. It includes JWT authentication, RESTful APIs, responsive UI, and an admin dashboard for product, order, and inventory management.",
+      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
+      accentFrom: "#3B82F6",
+      skills: ["React.js", "ASP.NET Core", "Microservices", "MongoDB", "REST API", "JWT", "Tailwind CSS"],
+      image: "/Prycely.jpg",
+      link: "https://prycely.vercel.app/",
+    },
+    {
+      title: "CodeSage — AI-Powered Code Review",
+      tag: "AI Developer Tool",
+      desc: "Developed an AI-powered code review platform that integrates with GitHub repositories to analyze pull requests, understand the project context, and generate intelligent code review suggestions. Features include GitHub OAuth authentication, repository management, automated pull request analysis, and a modern responsive dashboard.",
+      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
+      accentFrom: "#3B82F6",
+      skills: ["React.js", "ASP.NET Core", "MongoDB", "GitHub API", "REST API", "JWT", "Tailwind CSS", "OpenAI"],
+      image: "/CodeSage.jpg",
+      link: "https://codesage-plum.vercel.app/login",
+    },
+    {
+      title: "Triage — Multi-Tenant Support Ticketing Platform",
+      tag: "SaaS Support Platform",
+      desc: "Developed a full-stack multi-tenant support ticketing platform that enables organizations to manage customer support efficiently. Features include secure JWT authentication, role-based access control, ticket creation and assignment, SLA tracking, real-time status updates, an audit trail, and a responsive dashboard built with React.js and ASP.NET Core.",
+      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
+      accentFrom: "#3B82F6",
+      skills: ["React.js", "ASP.NET Core", "MongoDB", "REST API", "JWT", "Tailwind CSS"],
+      image: "/Triage.jpg",
+      link: "https://triage-web-ashy.vercel.app/login",
     },
   ];
 
@@ -394,18 +493,26 @@ export default function Portfolio2026() {
       className="relative min-h-screen overflow-x-hidden bg-bg font-['DM_Sans'] text-ink"
       style={{ backgroundImage: noiseBg }}
     >
-      {/* Scroll progress bar */}
+      
+      <a
+        href="#about"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-xl focus:bg-bg focus:px-4 focus:py-2 focus:text-sm focus:text-ink"
+      >
+        Skip to content
+      </a>
+
+     
       <motion.div
         style={{ scaleX: progress }}
         className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-gradient-to-r from-cyan via-violet to-pink"
       />
 
-      {/* Ambient mesh orbs */}
+      
       <Orb animated className="left-[-20%] top-[-10%] h-[700px] w-[700px] bg-cyan/[0.07]" />
       <Orb animated className="right-[-15%] top-[30%] h-[600px] w-[600px] bg-violet/[0.09]" />
       <Orb animated className="bottom-[10%] left-[10%] h-[500px] w-[500px] bg-pink/[0.06]" />
 
-      {/* ── NAVBAR ── */}
+     
       <header className={`fixed top-0 z-50 w-full transition-all duration-500 ${scrolled ? "py-3" : "py-5"}`}>
         <div
           className={`mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 transition-all duration-500 ${
@@ -423,7 +530,7 @@ export default function Portfolio2026() {
             </span>
           </a>
 
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
             {navItems.map((item) => (
               <a
                 key={item.id}
@@ -449,7 +556,7 @@ export default function Portfolio2026() {
             <ThemeToggle dark={dark} toggle={toggle} />
             <Magnetic className="hidden sm:block">
               <a
-                href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                href={MAILTO}
                 className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan to-violet px-5 py-2.5 font-['DM_Sans'] text-sm font-semibold text-on-accent shadow-[0_0_20px_var(--glow-cyan)] transition-all duration-300 hover:shadow-[0_0_30px_var(--glow-cyan-strong)]"
               >
                 Hire Me <ArrowRight />
@@ -478,7 +585,7 @@ export default function Portfolio2026() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -16, scale: 0.97 }}
               transition={{ duration: 0.2 }}
-              className="mx-4 mt-2 overflow-hidden rounded-2xl border border-bd bg-bg-soft/95 p-4 shadow-2xl backdrop-blur-2xl lg:hidden"
+              className="mx-4 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-bd bg-bg-soft/95 p-4 shadow-2xl backdrop-blur-2xl lg:hidden"
             >
               {navItems.map((item, i) => (
                 <motion.a
@@ -498,7 +605,8 @@ export default function Portfolio2026() {
               ))}
               <div className="mt-3 border-t border-bd pt-3">
                 <a
-                  href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                  href={MAILTO}
+                  onClick={() => setMobileMenu(false)}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan to-violet py-3 font-['DM_Sans'] text-sm font-semibold text-on-accent"
                 >
                   Hire Me <ArrowRight />
@@ -509,7 +617,7 @@ export default function Portfolio2026() {
         </AnimatePresence>
       </header>
 
-      {/* ── HERO ── */}
+      
       <section id="home" className="relative min-h-screen overflow-hidden">
         <div
           aria-hidden
@@ -528,7 +636,7 @@ export default function Portfolio2026() {
         >
           <div className="flex-1 text-center lg:text-left">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-6 inline-flex">
-              <SectionLabel>Full Stack .NET Developer · Mumbai</SectionLabel>
+              <SectionLabel>Software Engineer · .NET Core · React.js · Mumbai</SectionLabel>
             </motion.div>
 
             <motion.h1
@@ -548,7 +656,7 @@ export default function Portfolio2026() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-ink-soft lg:mx-0 lg:text-lg"
             >
-              4+ years crafting scalable web & desktop applications — from sleek React frontends to robust .NET backends. I turn complex problems into elegant, high-performance software.
+              Full-stack engineer with 4+ years building production systems in banking, HR & e-learning — C# and .NET Core on the backend, React.js on the front. Currently lead developer on a trading platform serving 4,000+ users at HDFC Bank.
             </motion.p>
 
             <motion.div
@@ -557,7 +665,7 @@ export default function Portfolio2026() {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="mt-8 flex flex-wrap justify-center gap-2 lg:justify-start"
             >
-              {[".NET Core", "React.js", "Node.js", "SQL Server", "Oracle", "MongoDB"].map((t) => (
+              {["C#", ".NET Core", "React.js", "Node.js", "SQL Server", "Oracle", "MongoDB"].map((t) => (
                 <Badge key={t}>{t}</Badge>
               ))}
             </motion.div>
@@ -570,7 +678,7 @@ export default function Portfolio2026() {
             >
               <Magnetic>
                 <a
-                  href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                  href={MAILTO}
                   className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan to-violet px-7 py-4 font-['DM_Sans'] text-sm font-semibold text-on-accent shadow-[0_0_30px_var(--glow-cyan)] transition-all duration-300 hover:shadow-[0_0_50px_var(--glow-cyan-strong)]"
                 >
                   Get In Touch
@@ -580,7 +688,7 @@ export default function Portfolio2026() {
                 </a>
               </Magnetic>
               <a
-                href="/resume.pdf"
+                href="/Shreemohan_FullStack.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-2xl border border-bd-strong bg-surface px-7 py-4 font-['DM_Sans'] text-sm font-semibold text-ink-soft backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-surface-2 hover:text-ink"
@@ -628,8 +736,11 @@ export default function Portfolio2026() {
               <div className="relative overflow-hidden rounded-[32px] border border-bd bg-gradient-to-b from-surface-2 to-surface p-1 shadow-[var(--shadow-float)]">
                 <img
                   src={profileImage}
-                  alt="Shreemohan Rajbhar"
+                  alt="Portrait of Shreemohan Rajbhar"
                   loading="eager"
+                  fetchPriority="high"
+                  width={400}
+                  height={540}
                   className="h-[400px] w-[300px] rounded-[28px] object-cover object-top sm:h-[480px] sm:w-[360px] lg:h-[540px] lg:w-[400px]"
                 />
                 <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-bd bg-bg/80 p-4 backdrop-blur-xl">
@@ -640,8 +751,8 @@ export default function Portfolio2026() {
                     </div>
                     <div className="h-8 w-[1px] bg-bd" />
                     <div>
-                      <p className="font-['Syne'] text-xs font-bold uppercase tracking-widest text-ink-faint">Projects</p>
-                      <p className="font-['Syne'] text-2xl font-black text-ink"><CountUp value="20" suffix="+" /></p>
+                      <p className="font-['Syne'] text-xs font-bold uppercase tracking-widest text-ink-faint">Users Served</p>
+                      <p className="font-['Syne'] text-2xl font-black text-ink"><CountUp value="4000" suffix="+" /></p>
                     </div>
                     <div className="h-8 w-[1px] bg-bd" />
                     <div>
@@ -670,8 +781,8 @@ export default function Portfolio2026() {
         </motion.a>
       </section>
 
-      {/* ── MARQUEE ── */}
-      <div className="relative border-y border-bd bg-surface/40 py-5 backdrop-blur-sm">
+      
+      <div aria-hidden="true" className="relative border-y border-bd bg-surface/40 py-5 backdrop-blur-sm">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-bg to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-bg to-transparent" />
         <div className="flex w-max animate-marquee gap-10">
@@ -684,8 +795,8 @@ export default function Portfolio2026() {
         </div>
       </div>
 
-      {/* ── ABOUT ── */}
-      <section id="about" className="px-4 py-24 sm:px-6 lg:py-36">
+     
+      <section id="about" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
           <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
             <SectionLabel>About Me</SectionLabel>
@@ -697,17 +808,29 @@ export default function Portfolio2026() {
                 Building software that <span className="text-grad-brand">scales & performs.</span>
               </h2>
 
+              
               <div className="mt-10 grid grid-cols-3 gap-4">
                 {[
                   { value: "4", suffix: "+", label: "Years Exp." },
-                  { value: "20", suffix: "+", label: "Projects" },
-                  { value: "50", suffix: "%", label: "Error Reduction" },
+                  { value: "80", suffix: "%+", label: "Faster Reports" },
+                  { value: "150", suffix: "+", label: "LeetCode Solved" },
                 ].map((s) => (
                   <div key={s.label} className="rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm">
                     <p className="font-['Syne'] text-3xl font-black text-ink"><CountUp value={s.value} suffix={s.suffix} /></p>
                     <p className="mt-1 font-['DM_Sans'] text-xs text-ink-faint">{s.label}</p>
                   </div>
                 ))}
+              </div>
+
+             
+              <div className="mt-6 flex items-center gap-4 rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm">
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-bd bg-gradient-to-br from-cyan/15 to-violet/15 text-cyan">
+                  <GraduationIcon />
+                </div>
+                <div>
+                  <p className="font-['Syne'] text-sm font-bold text-ink">B.Sc. in Computer Science</p>
+                  <p className="font-['DM_Sans'] text-xs text-ink-faint">University of Mumbai · 2017 – 2020</p>
+                </div>
               </div>
             </motion.div>
 
@@ -718,11 +841,11 @@ export default function Portfolio2026() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="space-y-5 text-base leading-relaxed text-ink-soft lg:text-lg"
             >
-              <p>I'm a passionate Full Stack Developer with 4+ years of experience designing and developing scalable web and desktop applications. I specialise in modern .NET ecosystems paired with contemporary JavaScript frontends.</p>
-              <p>My work spans financial trading platforms at HDFC Bank, e-learning assessment engines, enterprise HRMS systems, and CRM applications — always with a focus on clean architecture, performance, and exceptional user experience.</p>
-              <p>I thrive on turning complex requirements into elegant solutions, whether that means cutting report generation time by 80%, migrating legacy codebases, or building seamless SWIFT payment integrations.</p>
+              <p>I'm a full-stack engineer with 4+ years of experience building production systems in banking, HR, and e-learning — C# and .NET Core on the backend, React.js and modern JavaScript on the front.</p>
+              <p>I'm currently the lead developer on a Mutual Fund & Bond Trading platform serving 4,000+ active users at HDFC Bank, where I own the buy/sell transaction modules end to end and shipped SWIFT payment settlement with automated post-trade confirmations.</p>
+              <p>My biggest strength is performance engineering: I've removed a 3–4 minute report timeout by moving generation onto background threads, cut an HRMS page load from 2–3 minutes to 5–6 seconds, and reduced system errors by 50% through a .NET 4 → 4.8 migration of three products. Outside work I build full-stack products with React and .NET Core, and I've solved 150+ problems on LeetCode.</p>
               <div className="pt-2">
-                <a href="mailto:m.rajbhar1235@gmail.com" className="inline-flex items-center gap-2 font-['DM_Sans'] text-sm font-medium text-cyan transition-all hover:gap-3">
+                <a href={`mailto:${CONTACT.email}`} className="inline-flex items-center gap-2 font-['DM_Sans'] text-sm font-medium text-cyan transition-all hover:gap-3">
                   Let's work together <ArrowRight />
                 </a>
               </div>
@@ -731,8 +854,8 @@ export default function Portfolio2026() {
         </div>
       </section>
 
-      {/* ── SERVICES ── */}
-      <section id="services" className="px-4 py-24 sm:px-6 lg:py-36">
+      
+      <section id="services" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
             <SectionLabel>What I Do</SectionLabel>
@@ -755,8 +878,8 @@ export default function Portfolio2026() {
         </div>
       </section>
 
-      {/* ── SKILLS ── */}
-      <section id="skills" className="px-4 py-24 sm:px-6 lg:py-36">
+     
+      <section id="skills" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
             <SectionLabel>Skills & Expertise</SectionLabel>
@@ -782,13 +905,15 @@ export default function Portfolio2026() {
                   <div className="h-[3px] w-full overflow-hidden rounded-full bg-surface-2">
                     <motion.div
                       initial={{ width: 0 }}
-                      whileInView={{ width: `${skill.level}%` }}
+                      whileInView={{ width: `${(skill.years / maxYears) * 100}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 1.2, delay: 0.3 + i * 0.06, ease: "easeOut" }}
                       className="h-full rounded-full bg-gradient-to-r from-cyan to-violet"
                     />
                   </div>
-                  <p className="mt-2 text-right font-['DM_Sans'] text-[10px] text-ink-ghost">{skill.level}%</p>
+                  <p className="mt-2 text-right font-['DM_Sans'] text-[10px] uppercase tracking-wider text-ink-ghost">
+                    {skill.years} {skill.years === 1 ? "yr" : "yrs"} in production
+                  </p>
                 </div>
               </SpotlightCard>
             ))}
@@ -797,7 +922,7 @@ export default function Portfolio2026() {
       </section>
 
       {/* ── PROJECTS ── */}
-      <section id="projects" className="px-4 py-24 sm:px-6 lg:py-36">
+      <section id="projects" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
             <SectionLabel>Featured Work</SectionLabel>
@@ -814,8 +939,8 @@ export default function Portfolio2026() {
         </div>
       </section>
 
-      {/* ── EXPERIENCE ── */}
-      <section id="experience" className="relative px-4 py-24 sm:px-6 lg:py-36">
+      
+      <section id="experience" className="relative scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
         <div className="absolute left-1/2 top-0 hidden h-full w-[1px] -translate-x-1/2 bg-gradient-to-b from-transparent via-bd to-transparent md:block" />
         <div className="absolute left-[19px] top-0 h-full w-[1px] bg-gradient-to-b from-transparent via-bd to-transparent md:hidden" />
         <div className="mx-auto max-w-7xl">
@@ -873,8 +998,8 @@ export default function Portfolio2026() {
         </div>
       </section>
 
-      {/* ── CONTACT ── */}
-      <section id="contact" className="px-4 py-24 sm:px-6 lg:py-36">
+     
+      <section id="contact" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
         <div className="mx-auto max-w-7xl">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
             <SectionLabel>Get In Touch</SectionLabel>
@@ -900,12 +1025,12 @@ export default function Portfolio2026() {
                     Available for full-time roles and freelance projects. I bring 4+ years of .NET, React, and database expertise to every engagement.
                   </p>
                   <div className="mt-8 flex flex-wrap gap-2">
-                    {["React.js Development", ".NET Core APIs", "Full Stack Development", "Database Management"].map((s) => (<Badge key={s}>{s}</Badge>))}
+                    {[".NET Core APIs", "React.js Development", "Full Stack Development", "Performance Tuning", "Database Engineering"].map((s) => (<Badge key={s}>{s}</Badge>))}
                   </div>
                   <div className="mt-10 flex flex-wrap gap-4">
                     <Magnetic>
                       <a
-                        href="mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry"
+                        href={MAILTO}
                         className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan to-violet px-8 py-4 font-['DM_Sans'] text-sm font-semibold text-on-accent shadow-[0_0_30px_var(--glow-cyan)] transition-all duration-300 hover:shadow-[0_0_50px_var(--glow-cyan-strong)]"
                       >
                         Send a Message
@@ -924,20 +1049,13 @@ export default function Portfolio2026() {
                 </div>
 
                 <div className="flex flex-col justify-center space-y-6">
-                  {[
-                    { label: "Email", value: "m.rajbhar1235@gmail.com", href: "mailto:m.rajbhar1235@gmail.com", isLink: true },
-                    { label: "Phone", value: "+91 7208955201", href: "tel:+917208955201", isLink: true },
-                    { label: "Location", value: "Mumbai, India", isLink: false },
-                  ].map((detail) => (
-                    <div key={detail.label} className="rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-bd-strong">
-                      <p className="font-['DM_Sans'] text-xs uppercase tracking-[0.2em] text-ink-faint">{detail.label}</p>
-                      {detail.isLink ? (
-                        <a href={detail.href} className="mt-2 block font-['Syne'] text-base font-semibold text-ink transition-colors hover:text-cyan sm:text-lg">{detail.value}</a>
-                      ) : (
-                        <p className="mt-2 font-['Syne'] text-base font-semibold text-ink sm:text-lg">{detail.value}</p>
-                      )}
-                    </div>
-                  ))}
+                 
+                  <CopyableContact label="Email" value={CONTACT.email} href={`mailto:${CONTACT.email}`} />
+                  <CopyableContact label="Phone" value={CONTACT.phoneDisplay} href={CONTACT.phoneHref} />
+                  <div className="rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-bd-strong">
+                    <p className="font-['DM_Sans'] text-xs uppercase tracking-[0.2em] text-ink-faint">Location</p>
+                    <p className="mt-2 font-['Syne'] text-base font-semibold text-ink sm:text-lg">{CONTACT.location}</p>
+                  </div>
 
                   <div className="flex items-center gap-3 rounded-2xl border border-green/20 bg-green/5 p-5">
                     <span className="relative flex h-3 w-3">
@@ -972,7 +1090,9 @@ export default function Portfolio2026() {
             </div>
             <span className="font-['DM_Sans'] text-sm text-ink-faint">Shreemohan Rajbhar</span>
           </div>
-          <p className="font-['DM_Sans'] text-xs text-ink-ghost">© 2026 · Crafted with care in Mumbai</p>
+          <p className="font-['DM_Sans'] text-xs text-ink-ghost">
+            © {new Date().getFullYear()} · Crafted with care in Mumbai
+          </p>
         </div>
       </footer>
 
@@ -995,16 +1115,55 @@ export default function Portfolio2026() {
   );
 }
 
-/* ─────────────────────────────────────────────
-   Project card (own component so the spotlight hook is valid)
-   ───────────────────────────────────────────── */
+
+function CopyableContact({ label, value, href }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      
+    }
+  };
+  return (
+    <div className="group/card rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-bd-strong">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-['DM_Sans'] text-xs uppercase tracking-[0.2em] text-ink-faint">{label}</p>
+          <a href={href} className="mt-2 block truncate font-['Syne'] text-base font-semibold text-ink transition-colors hover:text-cyan sm:text-lg">
+            {value}
+          </a>
+        </div>
+        <button
+          onClick={copy}
+          aria-label={copied ? "Copied" : `Copy ${label.toLowerCase()}`}
+          className={`mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-bd bg-surface transition-all ${
+            copied ? "border-green/40 text-green" : "text-ink-faint hover:border-cyan/40 hover:text-cyan"
+          }`}
+        >
+          {copied ? <CheckIcon /> : <CopyIcon />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 function ProjectCard({ project, index }) {
   const sp = useSpotlight();
+  const isLink = Boolean(project.link);
+  const Wrapper = isLink ? motion.a : motion.div;
+  const wrapperProps = isLink
+    ? { href: project.link, target: "_blank", rel: "noopener noreferrer" }
+    : {};
+
   return (
-    <motion.a
-      href={project.link}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Wrapper
+      {...wrapperProps}
       ref={sp.ref}
       onMouseMove={sp.onMouseMove}
       initial={{ opacity: 0, y: 40 }}
@@ -1012,7 +1171,9 @@ function ProjectCard({ project, index }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       whileHover={{ y: -8 }}
-      className={`group relative overflow-hidden rounded-2xl border border-bd bg-surface backdrop-blur-sm transition-all duration-300 hover:border-bd-strong hover:shadow-[var(--shadow-card-hover)] ${index === 0 ? "md:col-span-2 lg:col-span-1" : ""}`}
+      className={`group relative overflow-hidden rounded-2xl border border-bd bg-surface backdrop-blur-sm transition-all duration-300 hover:border-bd-strong hover:shadow-[var(--shadow-card-hover)] ${
+        isLink ? "cursor-pointer" : "cursor-default"
+      }`}
     >
       <span
         aria-hidden
@@ -1022,8 +1183,13 @@ function ProjectCard({ project, index }) {
       <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${project.gradient}`}>
         <img
           src={project.image}
-          alt={project.title}
+          alt={`Screenshot of ${project.title}`}
           loading="lazy"
+          width={640}
+          height={360}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
           className="absolute inset-0 h-full w-full object-cover opacity-70 transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute right-4 top-4">
@@ -1034,12 +1200,20 @@ function ProjectCard({ project, index }) {
             {project.tag}
           </span>
         </div>
-        <div className="absolute bottom-3 right-3 flex h-9 w-9 translate-y-2 items-center justify-center rounded-full bg-bg/80 text-ink opacity-0 backdrop-blur transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <ExternalLink />
-        </div>
+        {isLink ? (
+          <div className="absolute bottom-3 right-3 flex h-9 w-9 translate-y-2 items-center justify-center rounded-full bg-bg/80 text-ink opacity-0 backdrop-blur transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+            <ExternalLink />
+          </div>
+        ) : (
+          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-bg/80 px-3 py-1.5 font-['DM_Sans'] text-[10px] font-semibold uppercase tracking-wider text-ink-faint backdrop-blur">
+            <LockIcon /> Internal · NDA
+          </div>
+        )}
       </div>
       <div className="relative z-10 p-6">
-        <h3 className="font-['Syne'] text-xl font-bold text-ink transition-colors group-hover:text-cyan">{project.title}</h3>
+        <h3 className={`font-['Syne'] text-xl font-bold text-ink transition-colors ${isLink ? "group-hover:text-cyan" : ""}`}>
+          {project.title}
+        </h3>
         <p className="mt-3 font-['DM_Sans'] text-sm leading-relaxed text-ink-soft">{project.desc}</p>
         <div className="mt-5 flex flex-wrap gap-2">
           {project.skills.map((s) => (
@@ -1047,13 +1221,11 @@ function ProjectCard({ project, index }) {
           ))}
         </div>
       </div>
-    </motion.a>
+    </Wrapper>
   );
 }
 
-/* ─────────────────────────────────────────────
-   Reusable spotlight card
-   ───────────────────────────────────────────── */
+
 function SpotlightCard({ children, delay = 0, hoverLift = false }) {
   const sp = useSpotlight();
   return (

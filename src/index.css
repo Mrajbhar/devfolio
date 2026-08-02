@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
-/* ============================================================
-   THEME TOKENS — light + dark
-   Toggle by adding/removing `.dark` on <html>.
-   ============================================================ */
+
 :root {
   /* page */
   --bg: #f6f5f9;
