@@ -1,1250 +1,910 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  useMotionValue,
-  useReducedMotion,
-  AnimatePresence,
-  animate,
-} from "framer-motion";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { motion, AnimatePresence, MotionConfig, animate, useInView, useReducedMotion, useScroll, useSpring } from "framer-motion";
 
-const profileImage = "/profile.png";
+/* ═══════════════════════════════════════════════════════════
+   YOUR CONTENT — edit text here, the whole page updates.
+   Images & resume live in /public (see file names below).
+   ═══════════════════════════════════════════════════════════ */
+const DATA = {
+  name: ["Shreemohan", "Rajbhar"],
+  label: "Full Stack Software Engineer · .NET Core · React.js · Mumbai",
+  headline: "Full Stack Software Engineer | .NET Core · C# · ASP.NET MVC | React.js · JavaScript",
+  intro: "Full-stack engineer with 4+ years building production systems in banking, HR and e-learning — C# and .NET Core on the backend, React.js on the front. Developer in the wealth management domain on a trading platform serving 4,000+ users at HDFC Bank.",
+  badges: ["C#", ".NET Core", "ASP.NET MVC", "React.js", "JavaScript", "SQL Server", "Azure DevOps"],
+  cv: "/Shreemohan_Rajbhar_Resume.pdf?v=2026-10", // latest resume in /public — change ?v= when you replace the PDF
+  cvFileName: "Shreemohan_Rajbhar_Resume.pdf",
+  avatar: "/avatar.webp",          // put avatar.webp in /public
+  avatarFace: "/avatar-face.webp", // put avatar-face.webp in /public
+  email: "m.rajbhar1235@gmail.com",
+  mailto: "mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry",
+  phone: "+91 72089 55301",
+  phoneHref: "tel:+917208955301",
+  location: "Mumbai, Maharashtra, India",
+  socials: [
+    { label: "GitHub", href: "https://github.com/Mrajbhar", icon: "github" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/mohan-rajbhar/", icon: "linkedin" },
+    { label: "LeetCode", href: "https://leetcode.com/u/Mrajbhar/", icon: "leetcode" },
+  ],
+  heroStats: [
+    { value: 4, suffix: "+ Years", label: "Experience" },
+    { value: 4000, suffix: "+", label: "Users Served" },
+  ],
+  stats: [
+    { value: 4, suffix: "+", label: "Years Exp." },
+    { value: 80, suffix: "%+", label: "Faster Reports" },
+    { value: 207, suffix: "", label: "LeetCode Solved" },
+  ],
+  aboutTitle: "Building software that scales & performs.",
+  about: [
+    "I'm a full-stack engineer with 4+ years of experience building production systems in banking, HR and e-learning — C# and .NET Core on the backend, React.js on the front, with a track record of modernising legacy applications to component-based UI.",
+    "I'm currently a developer in the wealth management domain at HDFC Bank (via Clover Infotech), working on a mutual fund and bond trading platform serving 4,000+ active users — covering portfolio transactions, trade settlement and securities buy/sell workflows end to end.",
+    "My biggest strength is performance engineering: I removed a 3–4 minute report timeout by moving report generation onto background threads, cut an HRMS page load from 2–3 minutes to 5–6 seconds, and reduced system errors by 50% by migrating three products from .NET 4 to .NET 4.8. Outside work I've solved 207 problems on LeetCode in Java and C++.",
+  ],
+  education: ["B.Sc. in Computer Science", "University of Mumbai, Maharashtra · 2017 – 2020"],
+  services: [
+    { title: "Full Stack Web Apps", icon: "◎", desc: "End-to-end product builds with React.js front ends and .NET Core back ends — secure REST APIs, OAuth sign-in, dynamic forms and data-driven dashboards." },
+    { title: "API & Systems Design", icon: "⬡", desc: "Clean REST API design in .NET Core and Web API, service layering, and cross-module data exchange over tuned stored procedures and views." },
+    { title: "Performance & Migration", icon: "▲", desc: "Legacy modernisation and tuning — I've cut report times by 80%+, page loads from 2–3 minutes to 5–6 seconds, and migrated server-rendered screens to React." },
+    { title: "Database Engineering", icon: "▣", desc: "SQL Server, Oracle SQL, MySQL & MongoDB — schema design, stored procedures and query optimisation for data-heavy workloads." },
+  ],
+  skills: [
+    { name: "C#", years: 4, icon: "◑", desc: "Core language across every role since 2022" },
+    { name: ".NET Core", years: 4, icon: "⬡", desc: "Web APIs, REST services & middleware" },
+    { name: "ASP.NET MVC", years: 4, icon: "◈", desc: "Web apps in banking, HRMS & e-learning" },
+    { name: "SQL Server", years: 4, icon: "▣", desc: "Queries, procedures & performance tuning" },
+    { name: "JavaScript", years: 4, icon: "◇", desc: "ES6+, jQuery & AJAX for dynamic forms" },
+    { name: "React.js", years: 3, icon: "◎", desc: "Component-based UI & legacy migrations" },
+    { name: "Oracle SQL", years: 2, icon: "◆", desc: "Tuned stored procedures & views (HRMS)" },
+    { name: "MongoDB", years: 2, icon: "◐", desc: "Indexed schemas for full-stack projects" },
+  ],
+  skillGroups: [
+    { name: "Languages", items: ["C#", "JavaScript (ES6+)", "SQL", "VB.NET", "Java", "C++"] },
+    { name: "Frontend", items: ["React.js", "JavaScript (ES6+)", "jQuery", "AJAX", "HTML5", "CSS3", "Bootstrap", "Responsive Design"] },
+    { name: "Backend", items: [".NET Core", "ASP.NET MVC", "Web API", "Entity Framework", "LINQ", "Node.js & Express.js (personal projects)"] },
+    { name: "Databases", items: ["SQL Server", "Oracle SQL", "MySQL", "MongoDB"] },
+    { name: "DevOps & Cloud", items: ["Azure DevOps (CI/CD pipelines)", "GitHub Actions", "Git", "GitHub", "Microsoft Azure", "AWS"] },
+    { name: "Practices", items: ["REST API design", "Multithreading", "Performance tuning", "OAuth", "Code review"] },
+  ],
+  domains: ["Wealth Management", "BFSI (Banking, Financial Services & Insurance)", "Securities Trading", "HRMS", "E-Learning"],
+  leetcode: {
+    solved: 207, easy: 85, medium: 102, hard: 20, badge: "100 Days Badge 2024",
+    focus: ["Arrays", "Strings", "Hashing", "Trees", "Graphs", "Dynamic Programming"], langs: "Java and C++",
+    url: "https://leetcode.com/u/Mrajbhar/",
+  },
+  marquee: ["C#", ".NET Core", "ASP.NET MVC", "Web API", "Entity Framework", "LINQ", "VB.NET", "React.js", "JavaScript (ES6+)", "jQuery", "AJAX", "Node.js", "Express.js", "SQL Server", "Oracle SQL", "MySQL", "MongoDB", "Azure DevOps", "GitHub Actions", "Microsoft Azure", "AWS", "REST APIs", "OAuth", "Multithreading", "SWIFT", "Git"],
+  experiences: [
+    {
+      year: "Jul 2025 – Present", role: "Software Engineer · Developer", company: "HDFC Bank", client: "via Clover Infotech · Wealth Management & Banking · Navi Mumbai",
+      points: [
+        "Developed core modules of a wealth management mutual fund and bond trading platform serving 4,000+ active users — covering portfolio transactions, trade settlement and securities buy/sell workflows end to end.",
+        "Built the ETF, Equity and Structured Notes product modules for WealthFY Offshore and supported the coordinated go-live and historical data migration — one of the platform's most significant rollouts in the past 2–3 years, delivered with Product, IT, BSG and vendor partners.",
+        "Designed and built multiple transaction and investment forms end to end — dynamic front-end behaviour and client-side validation in JavaScript and jQuery over ASP.NET MVC views and Web API endpoints.",
+        "Cut outbound SWIFT message volume and downstream reconciliation work by redesigning generation to batch multiple transactions into a single consolidated message instead of one per transaction.",
+        "Shipped SWIFT payment settlement and a third-party email notification API, automating post-trade confirmation on every purchase.",
+        "Delivered features from business requirements through to production, working closely with Business Analysts and Product on scoping, build, release and support.",
+      ],
+      skills: ["C#", "VB.NET", ".NET Core", "ASP.NET MVC", "Web API", "SQL Server", "Azure DevOps"],
+    },
+    {
+      year: "May 2024 – Jun 2025", role: "Software Engineer", company: "Sodel Software Solutions", client: "E-Learning Domain · Navi Mumbai",
+      points: [
+        "Reduced report load time by 80%+ and eliminated recurring HTTP 500 failures by moving generation of 1,000–10,000+ record reports onto background threads, replacing a synchronous flow that blocked the UI for 3–4 minutes; diagnosed, fixed and deployed in one week.",
+        "Improved execution performance 25% across 15+ pages by restructuring control flow and eliminating redundant loops.",
+        "Enabled Google and Microsoft OAuth sign-in by building custom authentication and authorization middleware with key-based encryption.",
+        "Built responsive, data-driven assessment pages with real-time question counting and percentage scoring, using JavaScript, AJAX and jQuery for live UI updates without page reloads.",
+      ],
+      skills: ["C#", "ASP.NET", "Entity Framework", "Multithreading", "JavaScript", "MySQL"],
+    },
+    {
+      year: "Nov 2022 – May 2024", role: "Software Developer", company: "Osource Global", client: "HRMS Applications · Navi Mumbai",
+      points: [
+        "Reduced HRMS page load from 2–3 minutes to 5–6 seconds, lifting user satisfaction 70% and cutting bounce rate 25%.",
+        "Cut system errors 50% and improved stability 20% by migrating three HRMS products from .NET 4 to .NET 4.8.",
+        "Enabled cross-module data exchange by designing REST APIs in .NET Core over tuned Oracle stored procedures and views.",
+        "Migrated legacy HRMS pages to React.js, rebuilding server-rendered screens as component-based UI consuming the .NET Core REST APIs — improving responsiveness and maintainability across modules.",
+      ],
+      skills: ["C#", ".NET Core", "ASP.NET", "REST APIs", "React.js", "Oracle SQL"],
+    },
+    {
+      year: "Apr 2022 – Oct 2022", role: "Junior Software Engineer", company: "Greytrix India", client: "CRM Application · Navi Mumbai",
+      points: [
+        "Migrated a CRM product front end to React.js backed by .NET Core Web APIs, improving scalability and performance, alongside feature work on the existing ASP.NET MVC application.",
+      ],
+      skills: ["ASP.NET MVC", ".NET Core Web API", "React.js", "Git"],
+    },
+  ],
+  projects: [
+    {
+      title: "Prycely — Full-Stack E-Commerce Platform", tag: "React.js · .NET Core", period: "2024 – Present", featured: true, cat: ["dotnet"], accent: "#10B981", image: "/Prycely.jpg", link: "https://prycely.vercel.app/",
+      desc: "Full-stack e-commerce platform: React front end with hooks-based state and reusable components, a .NET Core REST API, and MongoDB schemas indexed for fast product and order retrieval.",
+      skills: ["React.js", ".NET Core", "MongoDB", "REST API", "React Hooks"],
+    },
+    {
+      title: "CodeSage — AI-Powered Code Review", tag: "React.js · .NET Core", period: "Dec 2023 – Mar 2024", featured: true, cat: ["dotnet", "ai"], accent: "#8B5CF6", image: "/CodeSage.jpg", link: "https://codesage-plum.vercel.app/login",
+      desc: "React and .NET Core application with secure REST endpoints and a responsive interface; MongoDB-backed data layer for user and content management. Integrates with GitHub repositories to analyse pull requests and generate code review suggestions.",
+      skills: ["React.js", ".NET Core", "MongoDB", "REST API", "GitHub API", "OAuth"],
+    },
+    {
+      title: "Triage — Multi-Tenant Support Ticketing Platform", tag: "SaaS Support Platform", cat: ["dotnet"], accent: "#06B6D4", image: "/Triage.jpg", link: "https://triage-web-ashy.vercel.app/login",
+      desc: "Developed a full-stack multi-tenant support ticketing platform that enables organizations to manage customer support efficiently. Features include secure JWT authentication, role-based access control, ticket creation and assignment, SLA tracking, real-time status updates, an audit trail, and a responsive dashboard built with React.js and ASP.NET Core.",
+      skills: ["React.js", "ASP.NET Core", "MongoDB", "REST API", "JWT", "Tailwind CSS"],
+    },
+    {
+      title: "CareerCraft — Build Resumes and Prepare for Interviews", tag: "MERN Stack", cat: ["mern"], accent: "#EC4899", image: "/CareerCraft.jpg", link: "https://career-craft-pink-eight.vercel.app/",
+      desc: "Developed a full-stack resume builder and interview preparation platform using React.js, Node.js, Express.js, and MongoDB. The application allows users to create, edit, manage, and download resumes while practicing interview questions through an intuitive and responsive UI.",
+      skills: ["React.js", "Node.js", "Express.js", "MongoDB", "Tailwind CSS", "JWT"],
+    },
+    {
+      title: "ViewBlog — Blog Platform", tag: "MERN Stack · CMS", cat: ["mern"], accent: "#3B82F6", image: "/viewblog.jpg", link: "https://viewblog.vercel.app/",
+      desc: "Modern blogging platform with authentication, article publishing, image uploads, dark/light mode, and a fully responsive design.",
+      skills: ["React.js", "Node.js", "Express.js", "MongoDB", "Tailwind CSS", "JWT"],
+    },
+    {
+      title: "E-Commerce Application", tag: "Retail · Full Stack", cat: ["mern"], accent: "#F59E0B", image: "/Markethub.jpg", link: "https://markethub-app.vercel.app/",
+      desc: "Scalable e-commerce platform with product catalog, cart, and secure checkout. Built using MERN stack with JWT authentication and payment gateway integration.",
+      skills: ["ReactJS", "NodeJS", "MongoDB", "ExpressJS"],
+    },
+  ],
+  contactTitle: "Let's build something extraordinary together.",
+  contactText: "Available for full-time roles and freelance projects. I bring 4+ years of .NET, React, and database expertise to every engagement.",
+  contactBadges: [".NET Core APIs", "React.js Development", "Full Stack Development", "Performance Tuning", "Database Engineering"],
+};
+DATA.experiences.forEach((e) => { e.description = e.points.join(" "); });
 
+const NAV = [
+  { id: "home", label: "Home" },
+  { id: "about", label: "About" },
+  { id: "services", label: "Services" },
+  { id: "skills", label: "Skills" },
+  { id: "projects", label: "Projects" },
+  { id: "experience", label: "Experience" },
+  { id: "contact", label: "Contact" },
+];
+const NAV_IDS = NAV.map((n) => n.id);
+const MAX_YEARS = Math.max(...DATA.skills.map((s) => s.years));
+const ORBIT = [["C#", 0], [".NET", 72], ["React", 144], ["SQL", 216], ["Azure", 288]];
+const FILTERS = [["all", "All"], ["mern", "MERN"], ["dotnet", ".NET"], ["ai", "AI"]];
+const EASE = [0.16, 1, 0.3, 1];
+const hostOf = (url) => (url ? new URL(url).hostname : "");
 
-const GithubIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-    <path d="M12 2C6.477 2 2 6.486 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.866-.014-1.7-2.782.605-3.369-1.344-3.369-1.344-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.31.678.92.678 1.855 0 1.338-.012 2.42-.012 2.75 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.486 17.523 2 12 2z" />
-  </svg>
-);
-const LinkedinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-    <path d="M4.98 3.5C4.98 4.604 4.104 5.5 3 5.5S1.02 4.604 1.02 3.5 1.896 1.5 3 1.5s1.98.896 1.98 2zM1 8h4v13H1zM8 8h3.8v1.8h.05c.53-1 1.82-2.05 3.75-2.05C19.5 7.75 21 10 21 14v7h-4v-6.2c0-1.48-.03-3.38-2.06-3.38-2.06 0-2.38 1.6-2.38 3.27V21H8z" />
-  </svg>
-);
-const LeetcodeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-    <path d="M14.1 2l-1.4 1.4 6.5 6.6-6.5 6.6 1.4 1.4L22 10zM8.5 7L2 13.5 8.5 20l1.4-1.4-5.1-5.1 5.1-5.1z" />
-  </svg>
-);
-const ArrowRight = ({ className = "h-4 w-4" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-    <path d="M5 12h14M12 5l7 7-7 7" />
-  </svg>
-);
-const ExternalLink = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
-  </svg>
-);
-const LockIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-    <rect x="4" y="11" width="16" height="10" rx="2" />
-    <path d="M8 11V7a4 4 0 018 0v4" />
-  </svg>
-);
-const GraduationIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-    <path d="M22 10L12 5 2 10l10 5 10-5z" />
-    <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
-  </svg>
-);
-const SunIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-5 w-5">
-    <circle cx="12" cy="12" r="4" />
-    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-  </svg>
-);
-const MoonIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-  </svg>
-);
-const ArrowUp = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-    <path d="M12 19V5M5 12l7-7 7 7" />
-  </svg>
-);
-const CopyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-    <rect x="9" y="9" width="13" height="13" rx="2" />
-    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-  </svg>
-);
-const CheckIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-    <path d="M20 6L9 17l-5-5" />
-  </svg>
-);
-
-
-const noiseBg = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`;
-
-const Orb = ({ className, animated = false }) => (
-  <div
-    aria-hidden
-    className={`pointer-events-none absolute rounded-full blur-[120px] ${animated ? "animate-mesh" : ""} ${className}`}
-  />
-);
-
-function useSpotlight() {
-  const ref = useRef(null);
-  const onMouseMove = (e) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    el.style.setProperty("--mx", `${e.clientX - rect.left}px`);
-    el.style.setProperty("--my", `${e.clientY - rect.top}px`);
-  };
-  return { ref, onMouseMove };
+/* ═══════════════════════════════════════════════════════════
+   ICONS
+   ═══════════════════════════════════════════════════════════ */
+const STROKE = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
+const PATHS = {
+  arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
+  arrowUpRight: <path d="M7 17L17 7M8 7h9v9" />,
+  arrowUp: <path d="M12 19V5M6 11l6-6 6 6" />,
+  download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+  copy: (<><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1" /></>),
+  check: <path d="M20 6L9 17l-5-5" />,
+  sun: (<><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>),
+  moon: <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />,
+  menu: <path d="M4 8h16M4 16h16" />,
+  close: <path d="M6 6l12 12M18 6L6 18" />,
+  grad: (<><path d="M22 10L12 5 2 10l10 5 10-5z" /><path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" /></>),
+  mail: (<><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>),
+  phone: <path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2" />,
+  pin: (<><path d="M12 21s-7-6.1-7-11a7 7 0 1114 0c0 4.9-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></>),
+};
+const FILLED = {
+  github: <path d="M12 2C6.48 2 2 6.49 2 12.02c0 4.42 2.87 8.18 6.84 9.5.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03a9.56 9.56 0 015 0c1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.94.36.31.68.92.68 1.86v2.75c0 .27.18.58.69.48A10.02 10.02 0 0022 12.02C22 6.49 17.52 2 12 2z" />,
+  linkedin: <path d="M4.98 3.5a1.98 2 0 11-3.96 0 1.98 2 0 013.96 0zM1 8h4v13H1zM8 8h3.8v1.8h.05c.53-1 1.82-2.05 3.75-2.05C19.5 7.75 21 10 21 14v7h-4v-6.2c0-1.48-.03-3.38-2.06-3.38-2.06 0-2.38 1.6-2.38 3.27V21H8z" />,
+  leetcode: <path d="M14.1 2l-1.4 1.4 6.5 6.6-6.5 6.6 1.4 1.4L22 10zM8.5 7L2 13.5 8.5 20l1.4-1.4-5.1-5.1 5.1-5.1z" />,
+};
+function Icon({ name, className = "h-4 w-4" }) {
+  if (FILLED[name]) return <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>{FILLED[name]}</svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true" className={className} {...STROKE}>{PATHS[name]}</svg>;
 }
 
-
-const SectionLabel = ({ children }) => (
-  <div className="inline-flex items-center gap-2 rounded-full border border-bd bg-surface px-4 py-1.5 backdrop-blur-sm">
-    <span className="relative flex h-1.5 w-1.5">
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan opacity-60" />
-      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan" />
-    </span>
-    <span className="font-['DM_Sans'] text-xs font-medium uppercase tracking-[0.25em] text-cyan">
-      {children}
-    </span>
-  </div>
-);
-
-const Badge = ({ children }) => (
-  <span className="rounded-full border border-bd bg-surface px-3 py-1.5 font-['DM_Sans'] text-xs font-medium text-ink-soft backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan/40 hover:text-cyan">
-    {children}
-  </span>
-);
-
-function Magnetic({ children, strength = 0.35, className = "", ...rest }) {
-  const ref = useRef(null);
-  const reduce = useReducedMotion();
-  const x = useSpring(useMotionValue(0), { stiffness: 220, damping: 18 });
-  const y = useSpring(useMotionValue(0), { stiffness: 220, damping: 18 });
-
-  const onMove = (e) => {
-    if (reduce || !ref.current) return;
-    const r = ref.current.getBoundingClientRect();
-    x.set((e.clientX - (r.left + r.width / 2)) * strength);
-    y.set((e.clientY - (r.top + r.height / 2)) * strength);
-  };
-  const reset = () => {
-    x.set(0);
-    y.set(0);
-  };
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={reset}
-      style={{ x, y }}
-      className={className}
-      {...rest}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/* Count-up number that fires when scrolled into view */
-function CountUp({ value, suffix = "", duration = 1.6 }) {
-  const ref = useRef(null);
-  const [display, setDisplay] = useState("0");
-  const reduce = useReducedMotion();
-  const fired = useRef(false);
-
-  useEffect(() => {
-    const num = parseFloat(String(value).replace(/[^\d.]/g, "")) || 0;
-    if (reduce) {
-      setDisplay(String(num));
-      return;
-    }
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !fired.current) {
-          fired.current = true;
-          const controls = animate(0, num, {
-            duration,
-            ease: [0.16, 1, 0.3, 1],
-            onUpdate: (v) =>
-              setDisplay(Number.isInteger(num) ? Math.round(v).toString() : v.toFixed(0)),
-          });
-          return () => controls.stop();
-        }
-      },
-      { threshold: 0.4 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [value, duration, reduce]);
-
-  return (
-    <span ref={ref}>
-      {display}
-      {suffix}
-    </span>
-  );
-}
-
-
+/* ═══════════════════════════════════════════════════════════
+   HOOKS
+   ═══════════════════════════════════════════════════════════ */
 function useTheme() {
+  const reduce = useReducedMotion();
   const [dark, setDark] = useState(() => {
-    
-    if (typeof window === "undefined") return true;
     try {
       const saved = localStorage.getItem("pf-theme");
       if (saved) return saved === "dark";
-      
-      return !window.matchMedia("(prefers-color-scheme: light)").matches;
-    } catch {
-      return true;
-    }
+    } catch { /* storage blocked */ }
+    return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
-    try {
-      localStorage.setItem("pf-theme", dark ? "dark" : "light");
-    } catch {
-     
-    }
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    try { localStorage.setItem("pf-theme", dark ? "dark" : "light"); } catch { /* ignore */ }
   }, [dark]);
-
-  return { dark, toggle: () => setDark((d) => !d) };
+  const toggle = useCallback((e) => {
+    const next = !dark;
+    const apply = () => { document.documentElement.classList.toggle("dark", next); flushSync(() => setDark(next)); };
+    if (reduce || typeof document.startViewTransition !== "function") return apply();
+    const x = e?.clientX ?? window.innerWidth / 2, y = e?.clientY ?? 0;
+    const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+    document.startViewTransition(apply).ready.then(() =>
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+        { duration: 650, easing: "cubic-bezier(0.16,1,0.3,1)", pseudoElement: "::view-transition-new(root)" },
+      )).catch(() => {});
+  }, [dark, reduce]);
+  return { dark, toggle };
 }
-
-const ThemeToggle = ({ dark, toggle }) => (
-  <button
-    onClick={toggle}
-    aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-    className="flex h-10 w-10 items-center justify-center rounded-xl border border-bd bg-surface text-ink-soft transition-all hover:border-cyan/40 hover:text-cyan"
-  >
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.span
-        key={dark ? "moon" : "sun"}
-        initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
-        animate={{ opacity: 1, rotate: 0, scale: 1 }}
-        exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
-        transition={{ duration: 0.25 }}
-      >
-        {dark ? <MoonIcon /> : <SunIcon />}
-      </motion.span>
-    </AnimatePresence>
-  </button>
-);
-
 
 function useActiveSection(ids) {
   const [active, setActive] = useState(ids[0]);
   useEffect(() => {
-    const visible = new Map();
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => visible.set(e.target.id, e.isIntersecting));
-        for (let i = ids.length - 1; i >= 0; i--) {
-          if (visible.get(ids[i])) {
-            setActive(ids[i]);
-            return;
-          }
-        }
-      },
-      { rootMargin: "-30% 0px -60% 0px" },
-    );
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)), { rootMargin: "-45% 0px -50% 0px" });
+    ids.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
     return () => io.disconnect();
   }, [ids]);
   return active;
 }
 
-
-const CONTACT = {
-  email: "m.rajbhar1235@gmail.com",
-  phoneDisplay: "+91 72089 55301",
-  phoneHref: "tel:+917208955301",
-  location: "Mumbai, Maharashtra, India",
-};
-const MAILTO = `mailto:${CONTACT.email}?subject=Hiring%20Inquiry`;
-
-/* ══════════════════════════════════════════════════════════ */
-export default function Portfolio2026() {
-  const [mobileMenu, setMobileMenu] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [showTop, setShowTop] = useState(false);
-  const { dark, toggle } = useTheme();
-  const reduce = useReducedMotion();
-
-  const { scrollYProgress } = useScroll();
-  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 28, restDelta: 0.001 });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.18], [1, 0]);
-  const heroY = useTransform(scrollYProgress, [0, 0.18], [0, -60]);
-
-  const navItems = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About" },
-    { id: "services", label: "Services" },
-    { id: "skills", label: "Skills" },
-    { id: "projects", label: "Projects" },
-    { id: "experience", label: "Experience" },
-    { id: "contact", label: "Contact" },
-  ];
-
-  const activeSection = useActiveSection(navItems.map((n) => n.id));
-
+function useScrollState() {
+  const [s, setS] = useState({ scrolled: false, hidden: false, y: 0 });
   useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        setScrolled(window.scrollY > 20);
-        setShowTop(window.scrollY > 800);
-        raf = 0;
+    let last = window.scrollY, raf = 0;
+    const update = () => {
+      raf = 0;
+      const y = window.scrollY;
+      setS((p) => {
+        let hidden = p.hidden;
+        if (Math.abs(y - last) > 6) { hidden = y > last && y > 600; last = y; }
+        const scrolled = y > 20;
+        return scrolled === p.scrolled && hidden === p.hidden && Math.abs(y - p.y) < 300 ? p : { scrolled, hidden, y };
       });
     };
-    onScroll();
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
   }, []);
+  return s;
+}
 
+/* ═══════════════════════════════════════════════════════════
+   SMALL COMPONENTS
+   ═══════════════════════════════════════════════════════════ */
+function Reveal({ as = "div", delay = 0, y = 32, className = "", children, ...rest }) {
+  const Comp = motion[as] ?? motion.div;
+  return (
+    <Comp initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+      transition={{ duration: 0.9, ease: EASE, delay }} className={className} {...rest}>
+      {children}
+    </Comp>
+  );
+}
+
+function CountUp({ value, suffix = "", className = "" }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const reduce = useReducedMotion();
+  const [n, setN] = useState(0);
   useEffect(() => {
-    document.body.style.overflow = mobileMenu ? "hidden" : "";
-    const onKey = (e) => {
-      if (e.key === "Escape") setMobileMenu(false);
-    };
-    if (mobileMenu) window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [mobileMenu]);
+    if (!inView) return;
+    if (reduce) return setN(value);
+    const c = animate(0, value, { duration: 1.6, ease: EASE, onUpdate: (v) => setN(Math.round(v)) });
+    return () => c.stop();
+  }, [inView, value, reduce]);
+  return <span ref={ref} className={className}>{n}{suffix}</span>;
+}
 
-  
-  const skills = [
-    { name: "C#", years: 4, icon: "◑", desc: "Core language across every role since 2022" },
-    { name: ".NET Core", years: 4, icon: "⬡", desc: "Web APIs, REST services & middleware" },
-    { name: "ASP.NET MVC", years: 4, icon: "◈", desc: "Web apps in banking, HRMS & e-learning" },
-    { name: "SQL Server", years: 4, icon: "▣", desc: "Queries, procedures & performance tuning" },
-    { name: "React.js", years: 3, icon: "◎", desc: "SPAs, hooks & reusable components" },
-    { name: "Node.js", years: 3, icon: "◉", desc: "Express APIs & CRM front-end migration" },
-    { name: "Oracle DB", years: 2, icon: "◆", desc: "Tuned stored procedures & views (HRMS)" },
-    { name: "MongoDB", years: 2, icon: "◐", desc: "Indexed schemas for full-stack projects" },
-  ];
-  const maxYears = Math.max(...skills.map((s) => s.years));
+function CopyButton({ value, label, onCopied }) {
+  const [ok, setOk] = useState(false);
+  useEffect(() => { if (!ok) return; const t = setTimeout(() => setOk(false), 1800); return () => clearTimeout(t); }, [ok]);
+  return (
+    <button type="button" aria-label={ok ? `${label} copied` : `Copy ${label}`}
+      onClick={async () => { try { await navigator.clipboard.writeText(value); setOk(true); onCopied?.(value); } catch { /* blocked */ } }}
+      className={`ml-auto flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[11px] border transition-colors ${ok ? "border-mint text-mint" : "border-white/20 text-white/80 hover:border-white"}`}>
+      <Icon name={ok ? "check" : "copy"} className="h-[15px] w-[15px]" />
+    </button>
+  );
+}
 
-  const services = [
-    {
-      title: "Full Stack Web Apps",
-      icon: "◎",
-      desc: "End-to-end product builds with React frontends and .NET Core / Node back ends — auth (JWT, OAuth), payments, and admin dashboards included.",
-    },
-    {
-      title: "API & Systems Design",
-      icon: "⬡",
-      desc: "Clean, versioned REST APIs, service layering, and microservices architecture built to scale from prototype to production.",
-    },
-    {
-      title: "Performance & Migration",
-      icon: "▲",
-      desc: "Legacy modernisation and tuning — I've cut report times by 80%+ and page loads from 2–3 minutes to 5–6 seconds.",
-    },
-    {
-      title: "Database Engineering",
-      icon: "▣",
-      desc: "SQL Server, Oracle, MySQL & MongoDB schema design, stored procedures, and query optimisation for data-heavy workloads.",
-    },
-  ];
+function Kicker({ children, className = "" }) {
+  return (
+    <span className={`inline-flex items-center gap-2.5 text-[13.5px] font-bold uppercase tracking-[0.08em] text-accent before:h-0.5 before:w-[26px] before:rounded before:bg-current ${className}`}>
+      {children}
+    </span>
+  );
+}
+const h2 = "mt-3.5 font-display text-[clamp(36px,5vw,62px)] font-extrabold leading-[1.02] tracking-[-0.035em]";
 
-  const marquee = [
-    "C#", ".NET Core", "ASP.NET MVC", "Web API", "React.js", "Node.js",
-    "Express.js", "SQL Server", "Oracle", "MySQL", "MongoDB",
-    "Entity Framework", "LINQ", "REST APIs", "OAuth", "JWT",
-    "Multithreading", "SWIFT Integration", "Microservices",
-    "Tailwind CSS", "Bootstrap", "Git", "AWS",
-  ];
+function Tags({ items }) {
+  return (
+    <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
+      {items.map((t) => <span key={t} className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted">{t}</span>)}
+    </div>
+  );
+}
 
-  const experiences = [
-    {
-      year: "Jul 2025 – Present",
-      role: "Software Engineer · Lead Developer",
-      company: "HDFC Bank",
-      client: "via Clover Infotech · Navi Mumbai",
-      description:
-        "Lead developer on a Mutual Fund & Bond Trading platform serving 4,000+ active users — owning the buy/sell transaction modules end to end. Built the ETF, Equity & Structured Notes modules for WealthFY Offshore and supported one of the platform's biggest go-lives in years. Redesigned SWIFT generation to batch transactions into consolidated messages, and shipped SWIFT payment settlement plus automated email confirmations on every purchase.",
-      gradient: "from-cyan to-violet",
-      align: "right",
-      skills: ["C#", ".NET Core", "ASP.NET MVC", "Web API", "SQL Server", "Windows Forms", "SWIFT", "JavaScript"],
-    },
-    {
-      year: "May 2024 – Jun 2025",
-      role: "Software Engineer",
-      company: "Sodel Software Solutions",
-      client: "E-Learning Domain · Navi Mumbai",
-      description:
-        "Cut report load time by 80%+ and eliminated recurring HTTP 500 failures by moving 1,000–10,000+ record report generation onto background threads — replacing a synchronous flow that blocked the UI for 3–4 minutes. Built Google & Microsoft OAuth sign-in with custom auth middleware and key-based encryption, improved execution 25% across 15+ pages, and delivered a real-time assessment platform with live scoring.",
-      gradient: "from-violet to-pink",
-      align: "left",
-      skills: ["C#", "ASP.NET", "Entity Framework", "Multithreading", "OAuth", "MySQL", "AJAX", "jQuery"],
-    },
-    {
-      year: "Nov 2022 – May 2024",
-      role: "Software Developer",
-      company: "Osource Global",
-      client: "HRMS Applications · Navi Mumbai",
-      description:
-        "Reduced HRMS page load from 2–3 minutes to 5–6 seconds, lifting user satisfaction 70% and cutting bounce rate 25%. Migrated three HRMS products from .NET 4 to .NET 4.8, cutting system errors by 50% and improving stability 20%. Enabled cross-module data exchange by designing .NET Core REST APIs over tuned Oracle stored procedures and views.",
-      gradient: "from-cyan to-green",
-      align: "right",
-      skills: ["C#", ".NET Core", "ASP.NET", "REST API", "Oracle SQL", "Performance Tuning"],
-    },
-    {
-      year: "Apr 2022 – Oct 2022",
-      role: "Junior Software Engineer",
-      company: "Greytrix India",
-      client: "CRM Application · Navi Mumbai",
-      description:
-        "Contributed to CRM development on ASP.NET MVC and helped migrate the product front end to React.js and Node.js for improved scalability and performance, alongside feature delivery and bug fixes using Git/GitLab.",
-      gradient: "from-pink to-violet",
-      align: "left",
-      skills: ["ASP.NET MVC", "React.js", "Node.js", "JavaScript", "Git", "GitLab"],
-    },
-  ];
+function Socials({ label, light = false, className = "" }) {
+  return (
+    <div className={`flex items-center gap-2 text-[13px] text-faint ${className}`}>
+      {DATA.socials.map((s) => (
+        <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+          className={`flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 hover:-translate-y-[3px] ${
+            light ? "border-white/20 text-white hover:bg-white hover:text-navy" : "border-line bg-surface hover:border-ink hover:bg-ink hover:text-bg"}`}>
+          <Icon name={s.icon} className="h-[18px] w-[18px]" />
+        </a>
+      ))}
+      {label && <span className="ml-1.5">{label}</span>}
+    </div>
+  );
+}
 
-  const projects = [
-    {
-      title: "E-Commerce Application",
-      tag: "Retail · Full Stack",
-      desc: "Scalable e-commerce platform with product catalog, cart, and secure checkout. Built using MERN stack with JWT authentication and payment gateway integration.",
-      gradient: "from-[#F59E0B]/20 to-[#10B981]/10",
-      accentFrom: "#F59E0B",
-      skills: ["ReactJS", "NodeJS", "MongoDB", "ExpressJS"],
-      image: "/Markethub.jpg",
-      link: "https://markethub-app.vercel.app/",
-    },
-    {
-      title: "ViewBlog — Blog Platform",
-      tag: "MERN Stack · CMS",
-      desc: "Modern blogging platform with authentication, article publishing, image uploads, dark/light mode, and a fully responsive design.",
-      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
-      accentFrom: "#3B82F6",
-      skills: ["React.js", "Node.js", "Express.js", "MongoDB", "Tailwind CSS", "JWT"],
-      image: "/viewblog.jpg",
-      link: "https://viewblog.vercel.app/",
-    },
-    {
-      title: "CareerCraft — Build Resumes and Prepare for Interviews",
-      tag: "MERN Stack",
-      desc: "Developed a full-stack resume builder and interview preparation platform using React.js, Node.js, Express.js, and MongoDB. The application allows users to create, edit, manage, and download resumes while practicing interview questions through an intuitive and responsive UI.",
-      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
-      accentFrom: "#3B82F6",
-      skills: ["React.js", "Node.js", "Express.js", "MongoDB", "Tailwind CSS", "JWT"],
-      image: "/CareerCraft.jpg",
-      link: "https://career-craft-pink-eight.vercel.app/",
-    },
-    {
-      title: "Prycely — E-Commerce Application",
-      tag: ".NET Microservices",
-      desc: "Developed a scalable full-stack e-commerce application using React.js, ASP.NET Core, MongoDB, and a microservices architecture. The platform enables users to browse products, manage shopping carts, place orders, and securely complete payments. It includes JWT authentication, RESTful APIs, responsive UI, and an admin dashboard for product, order, and inventory management.",
-      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
-      accentFrom: "#3B82F6",
-      skills: ["React.js", "ASP.NET Core", "Microservices", "MongoDB", "REST API", "JWT", "Tailwind CSS"],
-      image: "/Prycely.jpg",
-      link: "https://prycely.vercel.app/",
-    },
-    {
-      title: "CodeSage — AI-Powered Code Review",
-      tag: "AI Developer Tool",
-      desc: "Developed an AI-powered code review platform that integrates with GitHub repositories to analyze pull requests, understand the project context, and generate intelligent code review suggestions. Features include GitHub OAuth authentication, repository management, automated pull request analysis, and a modern responsive dashboard.",
-      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
-      accentFrom: "#3B82F6",
-      skills: ["React.js", "ASP.NET Core", "MongoDB", "GitHub API", "REST API", "JWT", "Tailwind CSS", "OpenAI"],
-      image: "/CodeSage.jpg",
-      link: "https://codesage-plum.vercel.app/login",
-    },
-    {
-      title: "Triage — Multi-Tenant Support Ticketing Platform",
-      tag: "SaaS Support Platform",
-      desc: "Developed a full-stack multi-tenant support ticketing platform that enables organizations to manage customer support efficiently. Features include secure JWT authentication, role-based access control, ticket creation and assignment, SLA tracking, real-time status updates, an audit trail, and a responsive dashboard built with React.js and ASP.NET Core.",
-      gradient: "from-[#3B82F6]/20 to-[#06B6D4]/10",
-      accentFrom: "#3B82F6",
-      skills: ["React.js", "ASP.NET Core", "MongoDB", "REST API", "JWT", "Tailwind CSS"],
-      image: "/Triage.jpg",
-      link: "https://triage-web-ashy.vercel.app/login",
-    },
-  ];
-
-  const socials = [
-    { Icon: GithubIcon, href: "https://github.com/Mrajbhar", label: "GitHub" },
-    { Icon: LinkedinIcon, href: "https://www.linkedin.com/in/mohan-rajbhar/", label: "LinkedIn" },
-    { Icon: LeetcodeIcon, href: "https://leetcode.com/u/Mrajbhar/", label: "LeetCode" },
-  ];
+/* ═══════════════════════════════════════════════════════════
+   PAGE
+   ═══════════════════════════════════════════════════════════ */
+export default function Portfolio() {
+  const { dark, toggle } = useTheme();
+  const active = useActiveSection(NAV_IDS);
+  const [toast, setToast] = useState(null);
+  useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 1900); return () => clearTimeout(t); }, [toast]);
 
   return (
-    <div
-      className="relative min-h-screen overflow-x-hidden bg-bg font-['DM_Sans'] text-ink"
-      style={{ backgroundImage: noiseBg }}
-    >
-      
-      <a
-        href="#about"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-xl focus:bg-bg focus:px-4 focus:py-2 focus:text-sm focus:text-ink"
-      >
-        Skip to content
-      </a>
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen overflow-x-clip bg-bg font-sans text-[16px] leading-relaxed text-ink antialiased">
+        <ScrollProgress />
+        <Header active={active} dark={dark} toggle={toggle} />
+        <main>
+          <Hero />
+          <Marquee />
+          <About />
+          <Services />
+          <Skills />
+          <Projects />
+          <Experience />
+          <Contact onCopied={(v) => setToast(`Copied: ${v}`)} />
+        </main>
+        <footer className="py-8">
+          <div className="pf-wrap flex flex-wrap justify-between gap-2.5 text-[13px] text-faint">
+            <span>{DATA.name.join(" ")}</span>
+            <a href={DATA.cv} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-muted hover:text-accent">Resume <Icon name="arrowUpRight" className="h-3.5 w-3.5" /></a>
+            <span>© {new Date().getFullYear()} · Crafted with care in Mumbai</span>
+          </div>
+        </footer>
+        <BackToTop />
+        <div role="status" aria-live="polite"
+          className={`fixed bottom-6 left-1/2 z-[90] -translate-x-1/2 rounded-[14px] bg-ink px-[18px] py-3 text-sm font-semibold text-bg transition-all duration-500 ${toast ? "opacity-100" : "pointer-events-none translate-y-24 opacity-0"}`}>
+          {toast}
+        </div>
+      </div>
+    </MotionConfig>
+  );
+}
 
-     
-      <motion.div
-        style={{ scaleX: progress }}
-        className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-gradient-to-r from-cyan via-violet to-pink"
-      />
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 28, restDelta: 0.001 });
+  return <motion.div aria-hidden style={{ scaleX }} className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-accent" />;
+}
 
-      
-      <Orb animated className="left-[-20%] top-[-10%] h-[700px] w-[700px] bg-cyan/[0.07]" />
-      <Orb animated className="right-[-15%] top-[30%] h-[600px] w-[600px] bg-violet/[0.09]" />
-      <Orb animated className="bottom-[10%] left-[10%] h-[500px] w-[500px] bg-pink/[0.06]" />
-
-     
-      <header className={`fixed top-0 z-50 w-full transition-all duration-500 ${scrolled ? "py-3" : "py-5"}`}>
-        <div
-          className={`mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 transition-all duration-500 ${
-            scrolled
-              ? "mx-4 rounded-2xl border border-bd bg-bg/70 px-5 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-2xl sm:mx-6 lg:mx-8"
-              : ""
-          }`}
-        >
-          <a href="#home" className="group flex items-center gap-3">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan to-violet shadow-[0_0_20px_var(--glow-cyan)]">
-              <span className="font-['Syne'] text-sm font-black text-on-accent">MR</span>
-            </div>
-            <span className="hidden font-['Syne'] text-sm font-bold tracking-wider text-ink-soft transition-colors group-hover:text-ink sm:block">
-              Shreemohan Rajbhar
+/* ── Header ── */
+function Header({ active, dark, toggle }) {
+  const { scrolled, hidden } = useScrollState();
+  const [open, setOpen] = useState(false);
+  useEffect(() => { const k = (e) => e.key === "Escape" && setOpen(false); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, []);
+  const navLink = (on) =>
+    `relative px-3 py-2 text-[14.5px] font-semibold transition-colors after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded after:bg-accent after:transition-transform after:duration-500 ${
+      on ? "text-ink after:scale-x-100" : "text-muted after:scale-x-0 hover:text-ink hover:after:scale-x-100"}`;
+  return (
+    <>
+      <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${hidden && !open ? "-translate-y-full" : ""} ${scrolled ? "bg-bg/80 shadow-[0_1px_0_var(--line)] backdrop-blur-xl backdrop-saturate-150" : ""}`}>
+        <div className="pf-wrap flex h-[74px] items-center justify-between gap-3">
+          <a href="#home" className="group flex items-center gap-[11px] font-display text-[17px] font-bold tracking-[-0.01em]">
+            <span className="relative h-10 w-10 overflow-hidden rounded-full bg-accent shadow-[0_0_0_2px_var(--surface),0_0_0_4px_var(--accent)]">
+              <img src={DATA.avatarFace} alt="" className="absolute inset-0 h-full w-full translate-y-[6%] scale-105 object-cover transition-transform duration-500 group-hover:translate-y-0 group-hover:scale-[1.15]" />
             </span>
+            {DATA.name.join(" ")}
           </a>
-
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
-            {navItems.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                aria-current={activeSection === item.id ? "true" : undefined}
-                className={`relative rounded-lg px-4 py-2 font-['DM_Sans'] text-sm font-medium transition-all duration-300 ${
-                  activeSection === item.id ? "text-ink" : "text-ink-faint hover:text-ink"
-                }`}
-              >
-                {activeSection === item.id && (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="absolute inset-0 rounded-lg bg-surface-2"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-                  />
-                )}
-                <span className="relative z-10">{item.label}</span>
-              </a>
-            ))}
+          <nav aria-label="Primary" className="hidden gap-0.5 lg:flex">
+            {NAV.map((n) => <a key={n.id} href={`#${n.id}`} aria-current={active === n.id ? "true" : undefined} className={navLink(active === n.id)}>{n.label}</a>)}
           </nav>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle dark={dark} toggle={toggle} />
-            <Magnetic className="hidden sm:block">
-              <a
-                href={MAILTO}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan to-violet px-5 py-2.5 font-['DM_Sans'] text-sm font-semibold text-on-accent shadow-[0_0_20px_var(--glow-cyan)] transition-all duration-300 hover:shadow-[0_0_30px_var(--glow-cyan-strong)]"
-              >
-                Hire Me <ArrowRight />
-              </a>
-            </Magnetic>
-
-            <button
-              onClick={() => setMobileMenu(!mobileMenu)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-bd bg-surface text-ink transition-all hover:bg-surface-2 lg:hidden"
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenu}
-            >
-              <div className="flex flex-col gap-1.5">
-                <motion.span animate={{ rotate: mobileMenu ? 45 : 0, y: mobileMenu ? 7 : 0 }} className="block h-[1.5px] w-5 origin-center bg-ink" />
-                <motion.span animate={{ opacity: mobileMenu ? 0 : 1, scaleX: mobileMenu ? 0 : 1 }} className="block h-[1.5px] w-5 bg-ink" />
-                <motion.span animate={{ rotate: mobileMenu ? -45 : 0, y: mobileMenu ? -7 : 0 }} className="block h-[1.5px] w-5 origin-center bg-ink" />
-              </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={toggle} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+              className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-surface transition-all hover:-rotate-12 hover:border-accent">
+              <Icon name={dark ? "sun" : "moon"} className="h-[18px] w-[18px]" />
+            </button>
+            <a href={DATA.cv} target="_blank" rel="noopener noreferrer" className="pf-btn pf-btn-outline pf-btn-sm hidden xl:inline-flex">Resume <Icon name="arrowUpRight" /></a>
+            <a href={DATA.mailto} className="pf-btn pf-btn-accent pf-btn-sm hidden lg:inline-flex">Hire Me <Icon name="arrow" /></a>
+            <button type="button" onClick={() => setOpen((o) => !o)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}
+              className="flex h-[42px] w-[42px] items-center justify-center rounded-full border border-line bg-surface lg:hidden">
+              <Icon name={open ? "close" : "menu"} className="h-[18px] w-[18px]" />
             </button>
           </div>
         </div>
-
-        <AnimatePresence>
-          {mobileMenu && (
-            <motion.div
-              initial={{ opacity: 0, y: -16, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -16, scale: 0.97 }}
-              transition={{ duration: 0.2 }}
-              className="mx-4 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-bd bg-bg-soft/95 p-4 shadow-2xl backdrop-blur-2xl lg:hidden"
-            >
-              {navItems.map((item, i) => (
-                <motion.a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  onClick={() => setMobileMenu(false)}
-                  className={`flex items-center justify-between rounded-xl px-4 py-3.5 font-['DM_Sans'] text-sm font-medium transition-all ${
-                    activeSection === item.id ? "bg-surface-2 text-ink" : "text-ink-faint hover:bg-surface hover:text-ink"
-                  }`}
-                >
-                  {item.label}
-                  {activeSection === item.id && <span className="h-1.5 w-1.5 rounded-full bg-cyan" />}
-                </motion.a>
-              ))}
-              <div className="mt-3 border-t border-bd pt-3">
-                <a
-                  href={MAILTO}
-                  onClick={() => setMobileMenu(false)}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan to-violet py-3 font-['DM_Sans'] text-sm font-semibold text-on-accent"
-                >
-                  Hire Me <ArrowRight />
-                </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </header>
-
-      
-      <section id="home" className="relative min-h-screen overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-            maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%)",
-          }}
-        />
-
-        <motion.div
-          style={{ opacity: heroOpacity, y: heroY }}
-          className="mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 pt-24 pb-16 sm:px-6 lg:flex-row lg:gap-20 lg:pt-0"
-        >
-          <div className="flex-1 text-center lg:text-left">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-6 inline-flex">
-              <SectionLabel>Software Engineer · .NET Core · React.js · Mumbai</SectionLabel>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-              className="font-['Syne'] text-5xl font-black leading-[1.0] tracking-tight text-ink sm:text-6xl lg:text-7xl xl:text-[82px]"
-            >
-              Shreemohan
-              <br />
-              <span className="text-grad-brand">Rajbhar</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="mx-auto mt-7 max-w-xl text-base leading-relaxed text-ink-soft lg:mx-0 lg:text-lg"
-            >
-              Full-stack engineer with 4+ years building production systems in banking, HR & e-learning — C# and .NET Core on the backend, React.js on the front. Currently lead developer on a trading platform serving 4,000+ users at HDFC Bank.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="mt-8 flex flex-wrap justify-center gap-2 lg:justify-start"
-            >
-              {["C#", ".NET Core", "React.js", "Node.js", "SQL Server", "Oracle", "MongoDB"].map((t) => (
-                <Badge key={t}>{t}</Badge>
-              ))}
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-              className="mt-10 flex flex-wrap items-center justify-center gap-4 lg:justify-start"
-            >
-              <Magnetic>
-                <a
-                  href={MAILTO}
-                  className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan to-violet px-7 py-4 font-['DM_Sans'] text-sm font-semibold text-on-accent shadow-[0_0_30px_var(--glow-cyan)] transition-all duration-300 hover:shadow-[0_0_50px_var(--glow-cyan-strong)]"
-                >
-                  Get In Touch
-                  <motion.span animate={reduce ? {} : { x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                    <ArrowRight />
-                  </motion.span>
-                </a>
-              </Magnetic>
-              <a
-                href="/Shreemohan_FullStack.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 rounded-2xl border border-bd-strong bg-surface px-7 py-4 font-['DM_Sans'] text-sm font-semibold text-ink-soft backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-surface-2 hover:text-ink"
-              >
-                Download CV <ExternalLink />
-              </a>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="mt-10 flex items-center justify-center gap-4 lg:justify-start"
-            >
-              {socials.map(({ Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="group flex h-11 w-11 items-center justify-center rounded-xl border border-bd bg-surface text-ink-faint backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/40 hover:text-cyan"
-                >
-                  <Icon />
-                </a>
-              ))}
-              <div className="h-[1px] w-8 bg-bd-strong" />
-              <span className="font-['DM_Sans'] text-xs text-ink-ghost">Find me online</span>
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.2 }}
-            className="relative mt-14 flex-shrink-0 lg:mt-0"
-          >
-            <motion.div animate={reduce ? {} : { rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute inset-[-40px] rounded-full border border-dashed border-cyan/15" />
-            <motion.div animate={reduce ? {} : { rotate: -360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="absolute inset-[-20px] rounded-full border border-violet/10">
-              <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_20px_var(--glow-cyan-strong)]" />
-            </motion.div>
-
-            <motion.div animate={reduce ? {} : { y: [-8, 8, -8] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="relative">
-              <div className="absolute -inset-2 rounded-[36px] bg-gradient-to-br from-cyan/20 via-violet/15 to-pink/10 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[32px] border border-bd bg-gradient-to-b from-surface-2 to-surface p-1 shadow-[var(--shadow-float)]">
-                <img
-                  src={profileImage}
-                  alt="Portrait of Shreemohan Rajbhar"
-                  loading="eager"
-                  fetchPriority="high"
-                  width={400}
-                  height={540}
-                  className="h-[400px] w-[300px] rounded-[28px] object-cover object-top sm:h-[480px] sm:w-[360px] lg:h-[540px] lg:w-[400px]"
-                />
-                <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-bd bg-bg/80 p-4 backdrop-blur-xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-['Syne'] text-xs font-bold uppercase tracking-widest text-ink-faint">Experience</p>
-                      <p className="font-['Syne'] text-2xl font-black text-ink"><CountUp value="4" suffix="+ Years" /></p>
-                    </div>
-                    <div className="h-8 w-[1px] bg-bd" />
-                    <div>
-                      <p className="font-['Syne'] text-xs font-bold uppercase tracking-widest text-ink-faint">Users Served</p>
-                      <p className="font-['Syne'] text-2xl font-black text-ink"><CountUp value="4000" suffix="+" /></p>
-                    </div>
-                    <div className="h-8 w-[1px] bg-bd" />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-green shadow-[0_0_8px_#34D399]" />
-                        <p className="font-['Syne'] text-xs font-bold text-green">Available</p>
-                      </div>
-                      <p className="mt-0.5 font-['DM_Sans'] text-xs text-ink-faint">For hire</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-
-        <motion.a
-          href="#about"
-          animate={reduce ? {} : { y: [0, 8, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
-          aria-label="Scroll to about"
-        >
-          <span className="font-['DM_Sans'] text-[10px] uppercase tracking-[0.3em] text-ink-ghost">Scroll</span>
-          <div className="h-8 w-[1px] bg-gradient-to-b from-bd-strong to-transparent" />
-        </motion.a>
-      </section>
-
-      
-      <div aria-hidden="true" className="relative border-y border-bd bg-surface/40 py-5 backdrop-blur-sm">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-bg to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-bg to-transparent" />
-        <div className="flex w-max animate-marquee gap-10">
-          {[...marquee, ...marquee].map((t, i) => (
-            <span key={i} className="flex items-center gap-10 font-['Syne'] text-lg font-bold text-ink-ghost">
-              {t}
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan/50" />
-            </span>
-          ))}
-        </div>
-      </div>
-
-     
-      <section id="about" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
-        <div className="mx-auto max-w-7xl">
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-            <SectionLabel>About Me</SectionLabel>
-          </motion.div>
-
-          <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
-            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }}>
-              <h2 className="font-['Syne'] text-4xl font-black leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
-                Building software that <span className="text-grad-brand">scales & performs.</span>
-              </h2>
-
-              
-              <div className="mt-10 grid grid-cols-3 gap-4">
-                {[
-                  { value: "4", suffix: "+", label: "Years Exp." },
-                  { value: "80", suffix: "%+", label: "Faster Reports" },
-                  { value: "150", suffix: "+", label: "LeetCode Solved" },
-                ].map((s) => (
-                  <div key={s.label} className="rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm">
-                    <p className="font-['Syne'] text-3xl font-black text-ink"><CountUp value={s.value} suffix={s.suffix} /></p>
-                    <p className="mt-1 font-['DM_Sans'] text-xs text-ink-faint">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-
-             
-              <div className="mt-6 flex items-center gap-4 rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-bd bg-gradient-to-br from-cyan/15 to-violet/15 text-cyan">
-                  <GraduationIcon />
-                </div>
-                <div>
-                  <p className="font-['Syne'] text-sm font-bold text-ink">B.Sc. in Computer Science</p>
-                  <p className="font-['DM_Sans'] text-xs text-ink-faint">University of Mumbai · 2017 – 2020</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="space-y-5 text-base leading-relaxed text-ink-soft lg:text-lg"
-            >
-              <p>I'm a full-stack engineer with 4+ years of experience building production systems in banking, HR, and e-learning — C# and .NET Core on the backend, React.js and modern JavaScript on the front.</p>
-              <p>I'm currently the lead developer on a Mutual Fund & Bond Trading platform serving 4,000+ active users at HDFC Bank, where I own the buy/sell transaction modules end to end and shipped SWIFT payment settlement with automated post-trade confirmations.</p>
-              <p>My biggest strength is performance engineering: I've removed a 3–4 minute report timeout by moving generation onto background threads, cut an HRMS page load from 2–3 minutes to 5–6 seconds, and reduced system errors by 50% through a .NET 4 → 4.8 migration of three products. Outside work I build full-stack products with React and .NET Core, and I've solved 150+ problems on LeetCode.</p>
-              <div className="pt-2">
-                <a href={`mailto:${CONTACT.email}`} className="inline-flex items-center gap-2 font-['DM_Sans'] text-sm font-medium text-cyan transition-all hover:gap-3">
-                  Let's work together <ArrowRight />
-                </a>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      
-      <section id="services" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
-        <div className="mx-auto max-w-7xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
-            <SectionLabel>What I Do</SectionLabel>
-          </motion.div>
-          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mt-6 font-['Syne'] text-4xl font-black text-ink sm:text-5xl lg:text-6xl">
-            Services & Strengths
-          </motion.h2>
-
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((s, i) => (
-              <SpotlightCard key={s.title} delay={i * 0.08}>
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-bd bg-gradient-to-br from-cyan/15 to-violet/15 text-xl text-cyan">
-                  {s.icon}
-                </div>
-                <h3 className="font-['Syne'] text-lg font-bold text-ink">{s.title}</h3>
-                <p className="mt-2 font-['DM_Sans'] text-sm leading-relaxed text-ink-soft">{s.desc}</p>
-              </SpotlightCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-     
-      <section id="skills" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
-        <div className="mx-auto max-w-7xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
-            <SectionLabel>Skills & Expertise</SectionLabel>
-          </motion.div>
-          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mt-6 font-['Syne'] text-4xl font-black text-ink sm:text-5xl lg:text-6xl">
-            Tech Arsenal
-          </motion.h2>
-
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {skills.map((skill, i) => (
-              <SpotlightCard key={skill.name} delay={i * 0.06} hoverLift>
-                <div className="absolute -right-4 -top-4 text-[80px] font-black text-ink/[0.03] transition-all duration-500 group-hover:text-ink/[0.06]">
-                  {skill.icon}
-                </div>
-                <div className="relative z-10">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-bd bg-gradient-to-br from-cyan/15 to-violet/15 text-xl text-cyan">
-                    {skill.icon}
-                  </div>
-                  <h3 className="font-['Syne'] text-lg font-bold text-ink">{skill.name}</h3>
-                  <p className="mt-1.5 font-['DM_Sans'] text-xs text-ink-faint">{skill.desc}</p>
-                </div>
-                <div className="relative z-10 mt-5">
-                  <div className="h-[3px] w-full overflow-hidden rounded-full bg-surface-2">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${(skill.years / maxYears) * 100}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.2, delay: 0.3 + i * 0.06, ease: "easeOut" }}
-                      className="h-full rounded-full bg-gradient-to-r from-cyan to-violet"
-                    />
-                  </div>
-                  <p className="mt-2 text-right font-['DM_Sans'] text-[10px] uppercase tracking-wider text-ink-ghost">
-                    {skill.years} {skill.years === 1 ? "yr" : "yrs"} in production
-                  </p>
-                </div>
-              </SpotlightCard>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── PROJECTS ── */}
-      <section id="projects" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
-        <div className="mx-auto max-w-7xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
-            <SectionLabel>Featured Work</SectionLabel>
-          </motion.div>
-          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mt-6 font-['Syne'] text-4xl font-black text-ink sm:text-5xl lg:text-6xl">
-            Projects
-          </motion.h2>
-
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project, i) => (
-              <ProjectCard key={project.title} project={project} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      
-      <section id="experience" className="relative scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
-        <div className="absolute left-1/2 top-0 hidden h-full w-[1px] -translate-x-1/2 bg-gradient-to-b from-transparent via-bd to-transparent md:block" />
-        <div className="absolute left-[19px] top-0 h-full w-[1px] bg-gradient-to-b from-transparent via-bd to-transparent md:hidden" />
-        <div className="mx-auto max-w-7xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4 md:text-center">
-            <SectionLabel>Experience Timeline</SectionLabel>
-          </motion.div>
-          <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="mt-6 font-['Syne'] text-4xl font-black text-ink sm:text-5xl lg:text-6xl xl:text-7xl md:text-center">
-            My Professional Journey
-          </motion.h2>
-          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="mt-5 max-w-2xl font-['DM_Sans'] text-base text-ink-faint lg:text-lg md:mx-auto md:text-center">
-            Each role shaped a different dimension of my engineering craft.
-          </motion.p>
-
-          <div className="relative mt-20 space-y-10 md:space-y-16 lg:space-y-24">
-            {experiences.map((item, index) => (
-              <motion.div
-                key={item.year}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`relative flex pl-12 md:pl-0 ${item.align === "left" ? "md:justify-start" : "md:justify-end"}`}
-              >
-                {/* node — centered on desktop, left rail on mobile */}
-                <div className="absolute left-[14px] top-9 md:left-1/2 md:top-10 md:-translate-x-1/2">
-                  <span className="relative flex h-3 w-3">
-                    <span className={`absolute inline-flex h-full w-full animate-ping rounded-full bg-gradient-to-r ${item.gradient} opacity-40`} />
-                    <span className={`relative inline-flex h-3 w-3 rounded-full bg-gradient-to-r ${item.gradient} shadow-[0_0_12px_var(--glow-cyan)]`} />
-                  </span>
-                </div>
-
-                <motion.div
-                  whileHover={{ y: -6 }}
-                  className="group relative w-full overflow-hidden rounded-2xl border border-bd bg-surface p-6 backdrop-blur-sm transition-all duration-300 hover:border-bd-strong hover:bg-surface-2 hover:shadow-[var(--shadow-card-hover)] sm:p-8 md:w-[46%]"
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-5`} />
-                  <div className="relative z-10">
-                    <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${item.gradient} px-4 py-1.5 font-['DM_Sans'] text-xs font-bold tracking-wider text-on-accent`}>
-                      {item.year}
-                    </div>
-                    <div className="mt-5">
-                      <h3 className="font-['Syne'] text-2xl font-black text-ink sm:text-3xl">{item.role}</h3>
-                      <p className={`mt-1.5 bg-gradient-to-r font-['Syne'] text-base font-semibold ${item.gradient} bg-clip-text text-transparent sm:text-lg`}>{item.company}</p>
-                      <p className="mt-0.5 font-['DM_Sans'] text-sm text-ink-faint">{item.client}</p>
-                    </div>
-                    <p className="mt-5 font-['DM_Sans'] text-sm leading-relaxed text-ink-soft sm:text-base">{item.description}</p>
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      {item.skills.map((skill) => (<Badge key={skill}>{skill}</Badge>))}
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-     
-      <section id="contact" className="scroll-mt-28 px-4 py-24 sm:px-6 lg:py-36">
-        <div className="mx-auto max-w-7xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-4">
-            <SectionLabel>Get In Touch</SectionLabel>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="mt-8 overflow-hidden rounded-3xl border border-bd bg-surface p-8 backdrop-blur-sm sm:p-12 lg:p-16"
-          >
-            <div className="relative">
-              <Orb animated className="right-0 top-0 h-[300px] w-[300px] bg-cyan/[0.08]" />
-              <Orb animated className="bottom-0 left-0 h-[200px] w-[200px] bg-violet/[0.08]" />
-
-              <div className="relative z-10 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
-                <div>
-                  <h2 className="font-['Syne'] text-4xl font-black leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
-                    Let's build something <span className="text-grad-brand">extraordinary</span> together.
-                  </h2>
-                  <p className="mt-6 max-w-lg font-['DM_Sans'] text-base leading-relaxed text-ink-soft lg:text-lg">
-                    Available for full-time roles and freelance projects. I bring 4+ years of .NET, React, and database expertise to every engagement.
-                  </p>
-                  <div className="mt-8 flex flex-wrap gap-2">
-                    {[".NET Core APIs", "React.js Development", "Full Stack Development", "Performance Tuning", "Database Engineering"].map((s) => (<Badge key={s}>{s}</Badge>))}
-                  </div>
-                  <div className="mt-10 flex flex-wrap gap-4">
-                    <Magnetic>
-                      <a
-                        href={MAILTO}
-                        className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan to-violet px-8 py-4 font-['DM_Sans'] text-sm font-semibold text-on-accent shadow-[0_0_30px_var(--glow-cyan)] transition-all duration-300 hover:shadow-[0_0_50px_var(--glow-cyan-strong)]"
-                      >
-                        Send a Message
-                        <motion.span animate={reduce ? {} : { x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}><ArrowRight /></motion.span>
-                      </a>
-                    </Magnetic>
-                    <a
-                      href="/resume.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-2xl border border-bd-strong bg-surface px-8 py-4 font-['DM_Sans'] text-sm font-semibold text-ink-soft backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:text-ink"
-                    >
-                      Download CV <ExternalLink />
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-center space-y-6">
-                 
-                  <CopyableContact label="Email" value={CONTACT.email} href={`mailto:${CONTACT.email}`} />
-                  <CopyableContact label="Phone" value={CONTACT.phoneDisplay} href={CONTACT.phoneHref} />
-                  <div className="rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-bd-strong">
-                    <p className="font-['DM_Sans'] text-xs uppercase tracking-[0.2em] text-ink-faint">Location</p>
-                    <p className="mt-2 font-['Syne'] text-base font-semibold text-ink sm:text-lg">{CONTACT.location}</p>
-                  </div>
-
-                  <div className="flex items-center gap-3 rounded-2xl border border-green/20 bg-green/5 p-5">
-                    <span className="relative flex h-3 w-3">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green opacity-50" />
-                      <span className="relative inline-flex h-3 w-3 rounded-full bg-green" />
-                    </span>
-                    <div>
-                      <p className="font-['Syne'] text-sm font-bold text-green">Open to Opportunities</p>
-                      <p className="font-['DM_Sans'] text-xs text-ink-faint">Freelance & full-time</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    {socials.map(({ Icon, href, label }) => (
-                      <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="group flex h-12 w-12 items-center justify-center rounded-xl border border-bd bg-surface text-ink-faint transition-all hover:-translate-y-1 hover:border-cyan/30 hover:text-cyan">
-                        <Icon />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <footer className="border-t border-bd px-4 py-8 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-cyan to-violet">
-              <span className="font-['Syne'] text-xs font-black text-on-accent">MR</span>
-            </div>
-            <span className="font-['DM_Sans'] text-sm text-ink-faint">Shreemohan Rajbhar</span>
-          </div>
-          <p className="font-['DM_Sans'] text-xs text-ink-ghost">
-            © {new Date().getFullYear()} · Crafted with care in Mumbai
-          </p>
-        </div>
-      </footer>
-
-      {/* Back to top */}
       <AnimatePresence>
-        {showTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.6, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.6, y: 20 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" })}
-            aria-label="Back to top"
-            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-bd bg-bg/80 text-ink shadow-[var(--shadow-card)] backdrop-blur-xl transition-all hover:border-cyan/40 hover:text-cyan"
-          >
-            <ArrowUp />
-          </motion.button>
+        {open && (
+          <motion.nav aria-label="Mobile" initial={{ opacity: 0, y: -10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: EASE }}
+            className="fixed inset-x-4 top-[82px] z-[49] rounded-[20px] border border-line bg-surface p-2.5 shadow-[var(--shadow)] lg:hidden">
+            {NAV.map((n) => (
+              <a key={n.id} href={`#${n.id}`} onClick={() => setOpen(false)}
+                className={`block rounded-xl px-3.5 py-3 font-semibold ${active === n.id ? "bg-soft text-accent" : ""}`}>{n.label}</a>
+            ))}
+            <a href={DATA.cv} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)} className="flex items-center justify-between rounded-xl px-3.5 py-3 font-semibold">Resume <Icon name="arrowUpRight" className="h-4 w-4 text-accent" /></a>
+            <a href={DATA.mailto} className="pf-btn pf-btn-accent mt-2 w-full justify-center">Hire Me <Icon name="arrow" /></a>
+          </motion.nav>
         )}
       </AnimatePresence>
+    </>
+  );
+}
+
+/* ── Hero ── */
+function Hero() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setReady(true), 80); return () => clearTimeout(t); }, []);
+  const up = (delay) => ({ initial: { opacity: 0, y: 22 }, animate: ready ? { opacity: 1, y: 0 } : {}, transition: { duration: 0.9, ease: EASE, delay } });
+  const parts = DATA.label.split(" · ");
+  return (
+    <section id="home" className="relative flex min-h-svh items-center overflow-hidden pb-16 pt-28">
+      <div aria-hidden className="pointer-events-none absolute -right-64 -top-72 h-[900px] w-[900px] rounded-full bg-[radial-gradient(circle,var(--soft),transparent_65%)]" />
+      <div className="pf-wrap relative grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <div>
+          <motion.span {...up(0)} className="inline-flex items-center gap-2.5 rounded-full border border-line bg-surface py-[7px] pl-2 pr-3.5 text-[13.5px] font-semibold text-muted shadow-[var(--shadow)]">
+            <i className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-mint/20"><i className="pf-ping h-2 w-2 rounded-full bg-mint text-mint" /></i>
+            Available · For hire
+          </motion.span>
+          <h1 className="mt-[22px] font-display text-[clamp(52px,7.4vw,104px)] font-extrabold leading-[0.95] tracking-[-0.035em]">
+            <span className="sr-only">{DATA.name.join(" ")}</span>
+            {DATA.name.map((w, i) => (
+              <span key={w} aria-hidden className="block overflow-hidden pb-[0.06em]">
+                <motion.span className="block" initial={{ y: "105%" }} animate={{ y: ready ? "0%" : "105%" }} transition={{ duration: 1.1, ease: EASE, delay: i * 0.1 }}>
+                  {w}{i === 1 && <em className="not-italic text-accent">.</em>}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
+          <motion.div {...up(0.25)} className="mt-[18px] flex flex-wrap items-center gap-2.5 font-display text-[clamp(17px,1.6vw,20px)] font-semibold text-muted">
+            {parts.map((p, i) => (
+              <span key={p} className="flex items-center gap-2.5">
+                {i > 0 && <i className="h-[5px] w-[5px] rounded-full bg-accent" />}
+                {i === 0 ? <b className="font-semibold text-ink">{p}</b> : p}
+              </span>
+            ))}
+          </motion.div>
+          <motion.p {...up(0.35)} className="mt-[18px] max-w-[540px] text-[17px] text-muted">{DATA.intro}</motion.p>
+          <motion.div {...up(0.45)} className="mt-[30px] flex flex-wrap gap-2.5">
+            <a href={DATA.mailto} className="pf-btn pf-btn-accent">Get In Touch <Icon name="arrow" /></a>
+            <a href={DATA.cv} download={DATA.cvFileName} className="pf-btn pf-btn-outline">Download CV <Icon name="download" /></a>
+          </motion.div>
+          <motion.a {...up(0.5)} href={DATA.cv} target="_blank" rel="noopener noreferrer" className="group mt-3.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-accent">
+            View my latest resume <Icon name="arrowUpRight" className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </motion.a>
+          <motion.div {...up(0.55)}><Socials label="Find me online" className="mt-[22px]" /></motion.div>
+          <motion.div {...up(0.65)} className="mt-[34px] flex flex-wrap gap-x-9 gap-y-3 border-t border-line pt-6">
+            {[...DATA.heroStats, DATA.stats[1]].map((s) => (
+              <div key={s.label}>
+                <CountUp value={s.value} suffix={s.suffix} className="block font-display text-[clamp(28px,3vw,38px)] font-extrabold leading-none tracking-[-0.03em]" />
+                <span className="text-[13px] font-semibold text-faint">{s.label}</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+        <Portrait ready={ready} />
+      </div>
+    </section>
+  );
+}
+
+function FloatCard({ ready, delay, className, color = "var(--accent)", children, floatDelay = "0s" }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 24, scale: 0.9 }} animate={ready ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ type: "spring", stiffness: 160, damping: 14, delay }}
+      className={`absolute z-[3] rounded-[18px] border border-line bg-surface/90 p-3 pr-4 shadow-[var(--shadow)] backdrop-blur-md ${className}`}>
+      <div className="pf-float flex items-center gap-3" style={{ animationDelay: floatDelay, "--c": color }}>{children}</div>
+    </motion.div>
+  );
+}
+
+function Portrait({ ready }) {
+  const reduce = useReducedMotion();
+  const x = useSpring(0, { stiffness: 70, damping: 18 }), y = useSpring(0, { stiffness: 70, damping: 18 });
+  const ix = useSpring(0, { stiffness: 70, damping: 18 }), iy = useSpring(0, { stiffness: 70, damping: 18 });
+  useEffect(() => {
+    if (reduce || !window.matchMedia("(pointer: fine)").matches) return;
+    const move = (e) => { const nx = e.clientX / window.innerWidth - 0.5, ny = e.clientY / window.innerHeight - 0.5; x.set(nx * 32); y.set(ny * 20); ix.set(nx * 20); iy.set(ny * 12); };
+    window.addEventListener("pointermove", move, { passive: true });
+    return () => window.removeEventListener("pointermove", move);
+  }, [reduce, x, y, ix, iy]);
+  const icon = "flex h-[42px] w-[42px] items-center justify-center rounded-xl text-[18px] not-italic text-white";
+  return (
+    <motion.div style={{ x, y }} className="pf-portrait order-first justify-self-center lg:order-none">
+      <div aria-hidden className={`pf-rings ${ready ? "is-ready" : ""}`}>
+        <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="97" strokeDasharray="2 6" /><circle cx="100" cy="100" r="91" strokeDasharray="40 14 4 14" strokeOpacity=".2" /></svg>
+      </div>
+      <motion.div aria-hidden className="pf-disc" initial={{ scale: 0 }} animate={{ scale: ready ? 1 : 0 }} transition={{ type: "spring", stiffness: 110, damping: 13, delay: 0.1 }} />
+      <motion.div aria-hidden className="pf-orbit" initial={{ opacity: 0 }} animate={{ opacity: ready ? 1 : 0 }} transition={{ duration: 0.6, delay: 0.9 }}>
+        <div className="pf-orbit-track">{ORBIT.map(([t, a]) => <div key={t} className="pf-orbit-item" style={{ "--a": `${a}deg` }}><span>{t}</span></div>)}</div>
+      </motion.div>
+      <div className="pf-figure">
+        <motion.div className="absolute inset-0" style={{ x: ix, y: iy }}>
+          {/* width + h-auto keeps the avatar's real proportions (no stretching) */}
+          <motion.img src={DATA.avatar} alt={`Portrait of ${DATA.name.join(" ")}`} width={820} height={1101} fetchPriority="high"
+            className="absolute bottom-0 left-[6%] h-auto w-[88%] drop-shadow-[0_18px_24px_rgba(0,0,0,0.18)]"
+            initial={{ y: "40%", opacity: 0 }} animate={ready ? { y: "0%", opacity: 1 } : {}} transition={{ duration: 1.4, ease: EASE, delay: 0.45 }} />
+        </motion.div>
+      </div>
+      <FloatCard ready={ready} delay={1} className="left-[-4%] top-[44%] lg:left-[-14%]">
+        <i className={`${icon} bg-accent`}>★</i>
+        <div><CountUp value={4} suffix="+ Years" className="block font-display text-[22px] font-extrabold leading-[1.05]" /><small className="text-xs font-semibold text-faint">Experience</small></div>
+      </FloatCard>
+      <FloatCard ready={ready} delay={1.15} floatDelay="-3s" className="bottom-[12%] right-[-4%] lg:right-[-12%]">
+        <i className={`${icon} bg-navy`}>◉</i>
+        <div><CountUp value={4000} suffix="+" className="block font-display text-[22px] font-extrabold leading-[1.05]" /><small className="text-xs font-semibold text-faint">Users Served</small></div>
+      </FloatCard>
+      <FloatCard ready={ready} delay={1.3} floatDelay="-1.5s" className="right-0 top-[22%] py-2.5 lg:right-[-6%]">
+        <i className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] bg-mint text-sm not-italic text-white">✓</i>
+        <b className="text-sm">{DATA.experiences[0].company}</b>
+      </FloatCard>
+    </motion.div>
+  );
+}
+
+/* ── Marquee ── */
+function Marquee() {
+  const pill = "inline-flex items-center gap-2.5 whitespace-nowrap rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted before:h-[7px] before:w-[7px] before:rounded-full before:bg-accent";
+  const a = [...DATA.marquee, ...DATA.marquee], rev = [...DATA.marquee].reverse();
+  return (
+    <div aria-hidden className="pf-marquee grid gap-2.5 overflow-hidden border-y border-line bg-surface py-[18px]">
+      <div>{a.map((t, i) => <span key={i} className={pill}>{t}</span>)}</div>
+      <div className="pf-rev">{[...rev, ...rev].map((t, i) => <span key={i} className={pill}>{t}</span>)}</div>
     </div>
   );
 }
 
-
-function CopyableContact({ label, value, href }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      
-    }
-  };
+/* ── About ── */
+function About() {
   return (
-    <div className="group/card rounded-2xl border border-bd bg-surface p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-bd-strong">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-['DM_Sans'] text-xs uppercase tracking-[0.2em] text-ink-faint">{label}</p>
-          <a href={href} className="mt-2 block truncate font-['Syne'] text-base font-semibold text-ink transition-colors hover:text-cyan sm:text-lg">
-            {value}
-          </a>
+    <section id="about" className="py-[clamp(84px,11vw,140px)]">
+      <div className="pf-wrap grid items-start gap-[clamp(32px,6vw,80px)] lg:grid-cols-[0.85fr_1.15fr]">
+        <Reveal className="group max-w-[420px] overflow-hidden rounded-[28px] border border-line bg-surface shadow-[var(--shadow)] lg:sticky lg:top-[104px] lg:max-w-none">
+          <div className="relative aspect-square overflow-hidden bg-[linear-gradient(160deg,var(--accent),color-mix(in_srgb,var(--accent)_55%,#000_45%))]">
+            <div aria-hidden className="absolute inset-0 bg-[repeating-radial-gradient(circle_at_50%_120%,rgba(255,255,255,.07)_0_2px,transparent_2px_18px)]" />
+            <img src={DATA.avatar} alt="" loading="lazy" width={820} height={1101} className="absolute bottom-0 left-[11%] h-auto w-[78%] transition-transform duration-1000 group-hover:scale-[1.04]" />
+          </div>
+          <div className="px-6 pb-6 pt-[22px]">
+            <h3 className="m-0 font-display text-2xl font-extrabold tracking-[-0.02em]">{DATA.name.join(" ")}</h3>
+            <div className="mt-0.5 text-sm text-muted">{DATA.label}</div>
+            <div className="mt-4 flex items-center gap-3 rounded-[14px] bg-surface-2 p-3">
+              <i className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-soft text-accent"><Icon name="grad" className="h-5 w-5" /></i>
+              <div><b className="block text-sm">{DATA.education[0]}</b><span className="text-[12.5px] text-faint">{DATA.education[1]}</span></div>
+            </div>
+          </div>
+        </Reveal>
+        <div>
+          <Reveal><Kicker>About Me</Kicker></Reveal>
+          <Reveal as="h2" className="mt-3.5 font-display text-[clamp(32px,4.2vw,54px)] font-extrabold leading-[1.02] tracking-[-0.035em]">Building software that <em className="not-italic text-accent">scales &amp; performs.</em></Reveal>
+          {DATA.about.map((p, i) => (
+            <Reveal as="p" key={i} className={`mt-5 ${i === 0 ? "text-[clamp(19px,1.8vw,22px)] leading-[1.55] text-ink" : "text-[17px] text-muted"}`}>{p}</Reveal>
+          ))}
+          <div className="mt-9 grid grid-cols-3 gap-3.5">
+            {DATA.stats.map((s, i) => (
+              <Reveal key={s.label} delay={i * 0.08} className="rounded-[20px] border border-line bg-surface p-5 transition-all duration-500 hover:-translate-y-1 hover:border-accent">
+                <CountUp value={s.value} suffix={s.suffix} className="block font-display text-[clamp(30px,3.4vw,42px)] font-extrabold leading-none tracking-[-0.03em] text-accent" />
+                <span className="text-[13px] font-semibold text-faint">{s.label}</span>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal>
+            <a href={`mailto:${DATA.email}`} className="group mt-[30px] inline-flex items-center gap-2 bg-[linear-gradient(var(--accent),var(--accent))] bg-[length:100%_2px] bg-left-bottom bg-no-repeat pb-[3px] font-bold transition-[background-size] duration-500 hover:bg-[length:0_2px]">
+              Let's work together <Icon name="arrow" className="h-4 w-4 text-accent" />
+            </a>
+          </Reveal>
         </div>
-        <button
-          onClick={copy}
-          aria-label={copied ? "Copied" : `Copy ${label.toLowerCase()}`}
-          className={`mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-bd bg-surface transition-all ${
-            copied ? "border-green/40 text-green" : "text-ink-faint hover:border-cyan/40 hover:text-cyan"
-          }`}
-        >
-          {copied ? <CheckIcon /> : <CopyIcon />}
-        </button>
       </div>
-    </div>
+    </section>
   );
 }
 
-
-function ProjectCard({ project, index }) {
-  const sp = useSpotlight();
-  const isLink = Boolean(project.link);
-  const Wrapper = isLink ? motion.a : motion.div;
-  const wrapperProps = isLink
-    ? { href: project.link, target: "_blank", rel: "noopener noreferrer" }
-    : {};
-
+function SectionHead({ kicker, title, accent, sub, children }) {
   return (
-    <Wrapper
-      {...wrapperProps}
-      ref={sp.ref}
-      onMouseMove={sp.onMouseMove}
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ y: -8 }}
-      className={`group relative overflow-hidden rounded-2xl border border-bd bg-surface backdrop-blur-sm transition-all duration-300 hover:border-bd-strong hover:shadow-[var(--shadow-card-hover)] ${
-        isLink ? "cursor-pointer" : "cursor-default"
-      }`}
-    >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{ background: "radial-gradient(360px circle at var(--mx) var(--my), rgba(125,249,255,0.10), transparent 60%)" }}
-      />
-      <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${project.gradient}`}>
-        <img
-          src={project.image}
-          alt={`Screenshot of ${project.title}`}
-          loading="lazy"
-          width={640}
-          height={360}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-          className="absolute inset-0 h-full w-full object-cover opacity-70 transition-transform duration-700 group-hover:scale-110"
-        />
-        <div className="absolute right-4 top-4">
-          <span
-            className="rounded-full border px-3 py-1 font-['DM_Sans'] text-[10px] font-semibold uppercase tracking-wider text-white/90"
-            style={{ borderColor: `${project.accentFrom}40`, background: `${project.accentFrom}25` }}
-          >
-            {project.tag}
-          </span>
-        </div>
-        {isLink ? (
-          <div className="absolute bottom-3 right-3 flex h-9 w-9 translate-y-2 items-center justify-center rounded-full bg-bg/80 text-ink opacity-0 backdrop-blur transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-            <ExternalLink />
-          </div>
-        ) : (
-          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-bg/80 px-3 py-1.5 font-['DM_Sans'] text-[10px] font-semibold uppercase tracking-wider text-ink-faint backdrop-blur">
-            <LockIcon /> Internal · NDA
-          </div>
-        )}
+    <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <Kicker>{kicker}</Kicker>
+        <h2 className={h2}>{title} {accent && <em className="not-italic text-accent">{accent}</em>}</h2>
       </div>
-      <div className="relative z-10 p-6">
-        <h3 className={`font-['Syne'] text-xl font-bold text-ink transition-colors ${isLink ? "group-hover:text-cyan" : ""}`}>
-          {project.title}
-        </h3>
-        <p className="mt-3 font-['DM_Sans'] text-sm leading-relaxed text-ink-soft">{project.desc}</p>
-        <div className="mt-5 flex flex-wrap gap-2">
-          {project.skills.map((s) => (
-            <span key={s} className="rounded-full border border-bd bg-surface px-3 py-1 font-['DM_Sans'] text-[11px] text-ink-soft">{s}</span>
+      {sub && <p className="m-0 max-w-[440px] text-muted">{sub}</p>}
+      {children}
+    </Reveal>
+  );
+}
+
+/* ── Services ── */
+function Services() {
+  return (
+    <section id="services" className="pb-[clamp(84px,11vw,140px)]">
+      <div className="pf-wrap">
+        <SectionHead kicker="What I Do" title="Services &" accent="Strengths" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {DATA.services.map((s, i) => (
+            <Reveal key={s.title} delay={i * 0.08} tabIndex={0}
+              className="pf-svc group relative overflow-hidden rounded-3xl border border-line bg-surface p-7 transition-all duration-500 hover:-translate-y-1.5 hover:border-accent hover:text-white">
+              <span className="absolute right-[22px] top-5 font-display text-[15px] font-extrabold text-faint transition-colors duration-500 group-hover:text-white/70">0{i + 1}</span>
+              <div aria-hidden className="flex h-14 w-14 items-center justify-center rounded-2xl bg-soft text-[26px] text-accent transition-all duration-500 group-hover:-rotate-12 group-hover:scale-110 group-hover:bg-white/20 group-hover:text-white">{s.icon}</div>
+              <h3 className="mb-2.5 mt-[22px] font-display text-xl font-bold tracking-[-0.01em]">{s.title}</h3>
+              <p className="m-0 text-[14.5px] text-muted transition-colors duration-500 group-hover:text-white/90">{s.desc}</p>
+            </Reveal>
           ))}
         </div>
       </div>
-    </Wrapper>
+    </section>
   );
 }
 
-
-function SpotlightCard({ children, delay = 0, hoverLift = false }) {
-  const sp = useSpotlight();
+/* ── Skills ── */
+function Skills() {
+  const L = DATA.leetcode;
+  const chip = "rounded-full bg-surface-2 px-[11px] py-[5px] text-[13px] font-semibold text-muted transition-colors hover:bg-soft hover:text-accent";
+  const card = "rounded-[22px] border border-line bg-surface";
   return (
-    <motion.div
-      ref={sp.ref}
-      onMouseMove={sp.onMouseMove}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay }}
-      whileHover={hoverLift ? { y: -6, scale: 1.02 } : { y: -4 }}
-      className="group relative overflow-hidden rounded-2xl border border-bd bg-surface p-6 backdrop-blur-sm transition-all duration-300 hover:border-bd-strong hover:bg-surface-2 hover:shadow-[var(--shadow-card-hover)]"
-    >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{ background: "radial-gradient(280px circle at var(--mx) var(--my), rgba(124,92,240,0.12), transparent 60%)" }}
-      />
-      {children}
-    </motion.div>
+    <section id="skills" className="pb-[clamp(84px,11vw,140px)]">
+      <div className="pf-wrap">
+        <SectionHead kicker="Skills & Expertise" title="Tech" accent="Arsenal" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {DATA.skills.map((s, i) => (
+            <Reveal key={s.name} delay={(i % 4) * 0.07} className={`${card} flex flex-col gap-3.5 p-[22px] transition-all duration-500 hover:-translate-y-1 hover:border-accent`}>
+              <div className="flex items-center gap-3.5">
+                <div className="relative h-16 w-16 flex-shrink-0">
+                  <svg viewBox="0 0 64 64" aria-hidden className="h-full w-full -rotate-90">
+                    <circle cx="32" cy="32" r="27" fill="none" strokeWidth="6" className="stroke-surface-2" />
+                    <motion.circle cx="32" cy="32" r="27" fill="none" strokeWidth="6" strokeLinecap="round" className="stroke-accent"
+                      initial={{ pathLength: 0 }} whileInView={{ pathLength: s.years / MAX_YEARS }} viewport={{ once: true, amount: 0.6 }} transition={{ duration: 1.5, ease: EASE, delay: 0.2 }} />
+                  </svg>
+                  <b className="absolute inset-0 flex items-center justify-center font-display text-lg font-extrabold">{s.years}</b>
+                </div>
+                <div>
+                  <h3 className="m-0 font-display text-lg font-bold">{s.name}</h3>
+                  <small className="block text-xs font-semibold text-faint">{s.years} yrs in production</small>
+                </div>
+              </div>
+              <p className="m-0 text-sm text-muted">{s.desc}</p>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {DATA.skillGroups.map((g, i) => (
+            <Reveal key={g.name} delay={(i % 3) * 0.07} className={`${card} p-[22px]`}>
+              <h3 className="mb-3 mt-0 flex items-center gap-2.5 font-display text-base font-bold before:h-2 before:w-2 before:rotate-45 before:rounded-[2px] before:bg-accent">{g.name}</h3>
+              <div className="flex flex-wrap gap-1.5">{g.items.map((t) => <span key={t} className={chip}>{t}</span>)}</div>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-[1.25fr_1fr]">
+          <Reveal className={`${card} rounded-3xl p-[26px]`}>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="m-0 flex items-center gap-2.5 font-display text-lg font-bold">
+                <i className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#FFA116] text-[#1a1a1a]"><Icon name="leetcode" className="h-[18px] w-[18px]" /></i>
+                Coding Profile
+              </h3>
+              <a href={L.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-accent">View Profile <Icon name="arrowUpRight" className="h-3.5 w-3.5" /></a>
+            </div>
+            <div className="mt-[18px] flex items-baseline gap-2.5">
+              <CountUp value={L.solved} className="font-display text-[56px] font-extrabold leading-none tracking-[-0.04em]" />
+              <span className="font-semibold text-muted">problems solved on LeetCode</span>
+            </div>
+            <div role="img" aria-label={`${L.easy} easy, ${L.medium} medium, ${L.hard} hard`} className="mt-4 flex h-3 overflow-hidden rounded-full bg-surface-2">
+              {[[L.easy, "#00B8A3"], [L.medium, "#FFC01E"], [L.hard, "#FF375F"]].map(([v, c], i) => (
+                <motion.i key={c} className="block h-full" style={{ background: c }} initial={{ width: 0 }} whileInView={{ width: `${(v / L.solved) * 100}%` }}
+                  viewport={{ once: true, amount: 0.6 }} transition={{ duration: 1.3, ease: EASE, delay: i * 0.15 }} />
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-[13.5px] font-semibold text-muted">
+              {[[L.easy, "Easy", "#00B8A3"], [L.medium, "Medium", "#FFC01E"], [L.hard, "Hard", "#FF375F"]].map(([v, t, c]) => (
+                <span key={t} className="flex items-center gap-[7px]"><i className="h-[9px] w-[9px] rounded-full" style={{ background: c }} /><b className="text-ink">{v}</b> {t}</span>
+              ))}
+            </div>
+            <span className="mt-[18px] inline-flex items-center gap-2 rounded-full bg-[#FFA116]/15 px-3.5 py-[7px] text-[13px] font-bold text-[#C77A00] dark:text-[#FFB84D]">🏅 {L.badge}</span>
+            <div className="mt-4">
+              <small className="mb-2 block text-[12.5px] font-semibold text-faint">Focus areas · solved in {L.langs}</small>
+              <div className="flex flex-wrap gap-1.5">{L.focus.map((t) => <span key={t} className={chip}>{t}</span>)}</div>
+            </div>
+          </Reveal>
+          <Reveal delay={0.08} className={`${card} rounded-3xl p-[26px]`}>
+            <h3 className="mb-1.5 mt-0 font-display text-lg font-bold">Domain</h3>
+            <p className="mb-4 mt-0 text-sm text-muted">Industries I've built production systems for.</p>
+            <div className="grid gap-2">
+              {DATA.domains.map((d, i) => (
+                <span key={d} className="flex items-center gap-3 rounded-[14px] bg-surface-2 px-3.5 py-[11px] text-[14.5px] font-semibold transition-all duration-300 hover:translate-x-1.5 hover:bg-soft">
+                  <i aria-hidden className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[9px] bg-soft text-sm not-italic text-accent">{["◆", "▣", "▲", "◎", "◉"][i % 5]}</i>{d}
+                </span>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Projects ── */
+function ProjectImage({ p }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="relative aspect-video overflow-hidden" style={{ background: `linear-gradient(140deg, ${p.accent}80, ${p.accent}14)` }}>
+      <span aria-hidden className="absolute inset-0 flex items-center justify-center font-display text-[100px] font-extrabold opacity-40" style={{ color: p.accent }}>{p.title[0]}</span>
+      {!failed && <img src={p.image} alt={`Screenshot of ${p.title}`} loading="lazy" onError={() => setFailed(true)}
+        className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-[1.2s] group-hover:scale-105" />}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <span className="absolute left-3.5 top-3.5 z-[1] rounded-full bg-surface/95 px-[11px] py-[5px] text-xs font-bold">{p.tag}</span>
+      {p.featured && <span className="absolute right-3.5 top-3.5 z-[1] rounded-full bg-accent px-2.5 py-[5px] text-[11.5px] font-bold text-white">★ Featured</span>}
+      {p.link && (
+        <span className="absolute bottom-3.5 right-3.5 z-[1] flex h-11 w-11 translate-y-3 scale-75 items-center justify-center rounded-full bg-accent text-white opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100">
+          <Icon name="arrowUpRight" className="h-[18px] w-[18px]" />
+        </span>
+      )}
+    </div>
+  );
+}
+
+function Projects() {
+  const [filter, setFilter] = useState("all");
+  const list = filter === "all" ? DATA.projects : DATA.projects.filter((p) => p.cat.includes(filter));
+  return (
+    <section id="projects" className="pb-[clamp(84px,11vw,140px)]">
+      <div className="pf-wrap">
+        <SectionHead kicker="Featured Work" title="" accent="Projects">
+          <div role="group" aria-label="Filter projects" className="inline-flex gap-1 rounded-full border border-line bg-surface p-1">
+            {FILTERS.map(([k, label]) => (
+              <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}
+                className={`relative rounded-full px-[18px] py-[9px] text-sm font-bold transition-colors ${filter === k ? "text-white" : "text-muted hover:text-ink"}`}>
+                {filter === k && <motion.span layoutId="pf-filter" className="absolute inset-0 rounded-full bg-accent" transition={{ type: "spring", bounce: 0.2, duration: 0.45 }} />}
+                <span className="relative">{label}</span>
+              </button>
+            ))}
+          </div>
+        </SectionHead>
+        <motion.div layout className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {list.map((p) => {
+              const Card = p.link ? motion.a : motion.div;
+              const linkProps = p.link ? { href: p.link, target: "_blank", rel: "noopener noreferrer" } : {};
+              return (
+                <Card key={p.title} {...linkProps} layout initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.94 }}
+                  transition={{ duration: 0.45, ease: EASE }}
+                  className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-surface transition-[box-shadow,border-color,translate] duration-500 hover:-translate-y-2 hover:shadow-[var(--shadow)]"
+                  style={{ "--pc": p.accent }}>
+                  <div aria-hidden className="flex items-center gap-1.5 border-b border-line bg-surface-2 px-3 py-[9px]">
+                    <i className="h-[9px] w-[9px] rounded-full bg-[#FF5F57]" /><i className="h-[9px] w-[9px] rounded-full bg-[#FEBC2E]" /><i className="h-[9px] w-[9px] rounded-full bg-[#28C840]" />
+                    <span className="ml-2 min-w-0 flex-1 truncate rounded-md bg-surface px-2.5 py-[3px] text-center text-[11.5px] font-semibold text-faint">{p.link ? hostOf(p.link) : p.title.split(" — ")[0]}</span>
+                  </div>
+                  <ProjectImage p={p} />
+                  <div className="flex flex-1 flex-col px-[22px] pb-[22px] pt-5">
+                    <h3 className="m-0 font-display text-[19px] font-bold leading-[1.3] tracking-[-0.01em]">{p.title}</h3>
+                    <p className="mb-0 mt-2.5 line-clamp-4 text-[14.5px] text-muted">{p.desc}</p>
+                    <Tags items={p.skills} />
+                    <span className="mt-3 flex justify-between gap-2.5 text-[12.5px] text-faint">
+                      <span>{p.link ? "Live demo ↗" : "Personal project"}</span>{p.period && <b className="font-bold text-muted">{p.period}</b>}
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Experience ── */
+function Experience() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 60%", "end 60%"] });
+  const scaleY = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
+  return (
+    <section id="experience" className="pb-[clamp(84px,11vw,140px)]">
+      <div className="pf-wrap">
+        <SectionHead kicker="Experience Timeline" title="My Professional" accent="Journey" sub="Each role shaped a different dimension of my engineering craft." />
+        <div ref={ref} className="relative">
+          <span aria-hidden className="absolute bottom-0 left-3 top-0 w-0.5 -translate-x-1/2 bg-line md:left-1/2" />
+          <motion.span aria-hidden style={{ scaleY }} className="absolute bottom-0 left-3 top-0 w-0.5 origin-top -translate-x-1/2 bg-accent md:left-1/2" />
+          {DATA.experiences.map((e, i) => <TimelineItem key={e.year} e={e} left={i % 2 === 0} current={i === 0} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TimelineItem({ e, left, current }) {
+  const dot = useRef(null);
+  const [lit, setLit] = useState(false);
+  const [open, setOpen] = useState(false);
+  const { scrollYProgress } = useScroll({ target: dot, offset: ["start 60%", "start 59%"] });
+  useEffect(() => scrollYProgress.on("change", (v) => setLit(v > 0)), [scrollYProgress]);
+  const shown = open ? e.points : e.points.slice(0, 3);
+  return (
+    <div className={`relative mb-10 flex justify-end ${left ? "md:justify-start" : "md:justify-end"}`}>
+      <span ref={dot} aria-hidden className={`absolute left-3 top-[30px] z-[1] h-5 w-5 -translate-x-1/2 rounded-full border-[3px] transition-all duration-500 md:left-1/2 ${lit ? "scale-110 border-accent bg-accent shadow-[0_0_0_6px_var(--soft)]" : "border-line bg-bg"}`} />
+      <Reveal y={0} className="w-[calc(100%-40px)] rounded-3xl border border-line bg-surface p-7 transition-shadow duration-500 hover:shadow-[var(--shadow)] md:w-[calc(50%-46px)]">
+        <motion.div initial={{ x: left ? -40 : 40 }} whileInView={{ x: 0 }} viewport={{ once: true }} transition={{ duration: 0.9, ease: EASE }}>
+          <span className="inline-flex items-center gap-2 rounded-full bg-soft px-3 py-[5px] text-[13px] font-bold text-accent">
+            {e.year}{current && <span className="rounded-full bg-mint px-[9px] py-0.5 text-[11px] text-white">Now</span>}
+          </span>
+          <h3 className="mb-0.5 mt-3.5 font-display text-[clamp(20px,2.2vw,24px)] font-bold tracking-[-0.01em]">{e.role}</h3>
+          <div className="font-bold">{e.company}</div>
+          <div className="text-[13.5px] text-faint">{e.client}</div>
+          <ul className="mb-0 mt-3.5 grid list-none gap-[9px] p-0">
+            <AnimatePresence initial={false}>
+              {shown.map((p, k) => (
+                <motion.li key={k} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.4, ease: EASE }}
+                  className="relative pl-5 text-[14.5px] leading-relaxed text-muted before:absolute before:left-[3px] before:top-[0.6em] before:h-[7px] before:w-[7px] before:rotate-45 before:rounded-[2px] before:bg-accent">
+                  {p}
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
+          {e.points.length > 3 && (
+            <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-[7px] text-[13px] font-bold text-accent transition-colors hover:border-accent hover:bg-soft">
+              {open ? "Show less" : `Show all ${e.points.length} highlights`}
+              <Icon name="arrow" className={`h-3.5 w-3.5 transition-transform duration-300 ${open ? "-rotate-90" : "rotate-90"}`} />
+            </button>
+          )}
+          <Tags items={e.skills} />
+        </motion.div>
+      </Reveal>
+    </div>
+  );
+}
+
+/* ── Contact ── */
+function Contact({ onCopied }) {
+  const row = "flex items-center gap-3.5 rounded-[18px] border border-white/10 bg-white/[0.06] px-4 py-3.5 transition-all duration-500 hover:translate-x-1.5 hover:bg-white/10";
+  const ico = "flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[13px] bg-[#FF4D5E]/20 text-[#FF8A97]";
+  return (
+    <section id="contact" className="pb-[clamp(84px,11vw,140px)]">
+      <div className="pf-wrap">
+        <Reveal className="pf-on-navy relative overflow-hidden rounded-[36px] bg-navy p-[clamp(32px,6vw,72px)] text-[#F3F1F6]">
+          <div aria-hidden className="pf-drift pointer-events-none absolute -right-40 -top-52 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(255,77,94,.55),transparent_70%)]" />
+          <div className="relative grid items-center gap-12 lg:grid-cols-[1.2fr_1fr]">
+            <div>
+              <div className="mb-4 flex items-center gap-3.5">
+                <span className="relative h-16 w-16 overflow-hidden rounded-full bg-[#FF4D5E] shadow-[0_0_0_3px_rgba(255,255,255,.2)]"><img src={DATA.avatarFace} alt="" className="absolute inset-0 h-full w-full object-cover" /></span>
+                <div><b className="block font-display text-lg">{DATA.name.join(" ")}</b><small className="text-white/60">{DATA.label}</small></div>
+              </div>
+              <Kicker className="text-[#FF8A97]!">Get In Touch</Kicker>
+              <h2 className="mt-4 font-display text-[clamp(34px,4.8vw,60px)] font-extrabold leading-[1.03] tracking-[-0.035em]">
+                Let's build something <em className="not-italic text-[#FF6B7A]">extraordinary</em> together.
+              </h2>
+              <p className="mt-[18px] max-w-[520px] text-white/70">{DATA.contactText}</p>
+              <div className="mt-[22px] flex flex-wrap gap-1.5">
+                {DATA.contactBadges.map((b) => <span key={b} className="rounded-full border border-white/20 px-3 py-1.5 text-[12.5px] font-semibold text-white/85">{b}</span>)}
+              </div>
+              <div className="mt-[30px] flex flex-wrap gap-2.5">
+                <a href={DATA.mailto} className="pf-btn pf-btn-accent">Send a Message <Icon name="arrow" /></a>
+                <a href={DATA.cv} download={DATA.cvFileName} className="pf-btn pf-btn-ghost">Download CV <Icon name="download" /></a>
+              </div>
+            </div>
+            <div className="grid gap-2.5">
+              <div className={row}><span className={ico}><Icon name="mail" className="h-[18px] w-[18px]" /></span><div className="min-w-0"><small className="block text-xs text-white/55">Email</small><a href={`mailto:${DATA.email}`} className="break-all font-bold">{DATA.email}</a></div><CopyButton value={DATA.email} label="email" onCopied={onCopied} /></div>
+              <div className={row}><span className={ico}><Icon name="phone" className="h-[18px] w-[18px]" /></span><div><small className="block text-xs text-white/55">Phone</small><a href={DATA.phoneHref} className="font-bold">{DATA.phone}</a></div><CopyButton value={DATA.phone} label="phone" onCopied={onCopied} /></div>
+              <div className={row}><span className={ico}><Icon name="pin" className="h-[18px] w-[18px]" /></span><div><small className="block text-xs text-white/55">Location</small><b>{DATA.location}</b></div></div>
+              <div className={row}><span className={`${ico} bg-[#3DD9A7]/15!`}><i className="pf-ping h-2.5 w-2.5 rounded-full bg-[#3DD9A7] text-[#3DD9A7]" /></span><div><b>Open to Opportunities</b><small className="block text-xs text-white/55">Freelance &amp; full-time</small></div></div>
+              <Socials light className="mt-1.5" />
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ── Back to top (ring shows page progress) ── */
+function BackToTop() {
+  const { y } = useScrollState();
+  const { scrollYProgress } = useScroll();
+  return (
+    <a href="#home" aria-label="Back to top"
+      className={`fixed bottom-5 right-5 z-40 flex h-[50px] w-[50px] items-center justify-center rounded-full border border-line bg-surface shadow-[var(--shadow)] transition-all duration-500 ${y > 900 ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0"}`}>
+      <svg viewBox="0 0 52 52" aria-hidden className="absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)] -rotate-90">
+        <motion.circle cx="26" cy="26" r="24" fill="none" strokeWidth="2.5" className="stroke-accent" style={{ pathLength: scrollYProgress }} />
+      </svg>
+      <Icon name="arrowUp" className="h-[18px] w-[18px]" />
+    </a>
   );
 }
