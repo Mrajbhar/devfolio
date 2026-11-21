@@ -454,7 +454,7 @@ function Header({ active, dark, toggle }) {
         <div className="pf-wrap flex h-[74px] items-center justify-between gap-3">
           <a href="#home" className="group flex items-center gap-[11px] font-display text-[17px] font-bold tracking-[-0.01em]">
             <span className="relative h-10 w-10 overflow-hidden rounded-full bg-accent shadow-[0_0_0_2px_var(--surface),0_0_0_4px_var(--accent)]">
-              <img src={DATA.avatarFace} alt="" className="absolute inset-0 h-full w-full translate-y-[6%] scale-105 object-cover transition-transform duration-500 group-hover:translate-y-0 group-hover:scale-[1.15]" />
+              <img src={DATA.avatarFace} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
             </span>
             {DATA.name.join(" ")}
           </a>
