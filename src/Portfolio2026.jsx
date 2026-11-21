@@ -2,20 +2,16 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { flushSync } from "react-dom";
 import { motion, AnimatePresence, MotionConfig, animate, useInView, useReducedMotion, useScroll, useSpring } from "framer-motion";
 
-/* ═══════════════════════════════════════════════════════════
-   YOUR CONTENT — edit text here, the whole page updates.
-   Images & resume live in /public (see file names below).
-   ═══════════════════════════════════════════════════════════ */
 const DATA = {
   name: ["Shreemohan", "Rajbhar"],
   label: "Full Stack Software Engineer · .NET Core · React.js · Mumbai",
   headline: "Full Stack Software Engineer | .NET Core · C# · ASP.NET MVC | React.js · JavaScript",
   intro: "Full-stack engineer with 4+ years building production systems in banking, HR and e-learning — C# and .NET Core on the backend, React.js on the front. Developer in the wealth management domain on a trading platform serving 4,000+ users at HDFC Bank.",
   badges: ["C#", ".NET Core", "ASP.NET MVC", "React.js", "JavaScript", "SQL Server", "Azure DevOps"],
-  cv: "/Shreemohan_Rajbhar_Resume.pdf?v=2026-10", // latest resume in /public — change ?v= when you replace the PDF
+  cv: "/Shreemohan_Rajbhar_Resume.pdf?v=2026-11",
   cvFileName: "Shreemohan_Rajbhar_Resume.pdf",
-  avatar: "/avatar.webp",          // put avatar.webp in /public
-  avatarFace: "/avatar-face.webp", // put avatar-face.webp in /public
+  avatar: "/avatar.webp",
+  avatarFace: "/avatar-face.webp",
   email: "m.rajbhar1235@gmail.com",
   mailto: "mailto:m.rajbhar1235@gmail.com?subject=Hiring%20Inquiry",
   phone: "+91 72089 55301",
@@ -27,19 +23,20 @@ const DATA = {
     { label: "LeetCode", href: "https://leetcode.com/u/Mrajbhar/", icon: "leetcode" },
   ],
   heroStats: [
-    { value: 4, suffix: "+ Years", label: "Experience" },
-    { value: 4000, suffix: "+", label: "Users Served" },
+    { value: 80, suffix: "%+", label: "Faster Reports" },
+    { value: 50, suffix: "%", label: "Fewer System Errors" },
+    { value: 207, suffix: "", label: "LeetCode Solved", live: "solved" },
   ],
   stats: [
     { value: 4, suffix: "+", label: "Years Exp." },
-    { value: 80, suffix: "%+", label: "Faster Reports" },
-    { value: 207, suffix: "", label: "LeetCode Solved" },
+    { value: 3, suffix: "", label: "Products Modernised" },
+    { value: 5, suffix: "", label: "Industries" },
   ],
   aboutTitle: "Building software that scales & performs.",
   about: [
     "I'm a full-stack engineer with 4+ years of experience building production systems in banking, HR and e-learning — C# and .NET Core on the backend, React.js on the front, with a track record of modernising legacy applications to component-based UI.",
     "I'm currently a developer in the wealth management domain at HDFC Bank (via Clover Infotech), working on a mutual fund and bond trading platform serving 4,000+ active users — covering portfolio transactions, trade settlement and securities buy/sell workflows end to end.",
-    "My biggest strength is performance engineering: I removed a 3–4 minute report timeout by moving report generation onto background threads, cut an HRMS page load from 2–3 minutes to 5–6 seconds, and reduced system errors by 50% by migrating three products from .NET 4 to .NET 4.8. Outside work I've solved 207 problems on LeetCode in Java and C++.",
+    "My biggest strength is performance engineering: I removed a 3–4 minute report timeout by moving report generation onto background threads, cut an HRMS page load from 2–3 minutes to 5–6 seconds, and reduced system errors by 50% by migrating three products from .NET 4 to .NET 4.8. Outside work I solve problems on LeetCode in Java and C++.",
   ],
   education: ["B.Sc. in Computer Science", "University of Mumbai, Maharashtra · 2017 – 2020"],
   services: [
@@ -168,9 +165,6 @@ const FILTERS = [["all", "All"], ["mern", "MERN"], ["dotnet", ".NET"], ["ai", "A
 const EASE = [0.16, 1, 0.3, 1];
 const hostOf = (url) => (url ? new URL(url).hostname : "");
 
-/* ═══════════════════════════════════════════════════════════
-   ICONS
-   ═══════════════════════════════════════════════════════════ */
 const STROKE = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
 const PATHS = {
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
@@ -198,22 +192,19 @@ function Icon({ name, className = "h-4 w-4" }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true" className={className} {...STROKE}>{PATHS[name]}</svg>;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   HOOKS
-   ═══════════════════════════════════════════════════════════ */
 function useTheme() {
   const reduce = useReducedMotion();
   const [dark, setDark] = useState(() => {
     try {
       const saved = localStorage.getItem("pf-theme");
       if (saved) return saved === "dark";
-    } catch { /* storage blocked */ }
+    } catch {}
     return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
   });
   useLayoutEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
     document.documentElement.style.colorScheme = dark ? "dark" : "light";
-    try { localStorage.setItem("pf-theme", dark ? "dark" : "light"); } catch { /* ignore */ }
+    try { localStorage.setItem("pf-theme", dark ? "dark" : "light"); } catch {}
   }, [dark]);
   const toggle = useCallback((e) => {
     const next = !dark;
@@ -262,16 +253,88 @@ function useScrollState() {
   return s;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SMALL COMPONENTS
-   ═══════════════════════════════════════════════════════════ */
-function Reveal({ as = "div", delay = 0, y = 32, className = "", children, ...rest }) {
+function Reveal({ as = "div", delay = 0, y = 20, className = "", children, ...rest }) {
   const Comp = motion[as] ?? motion.div;
   return (
     <Comp initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "0px 0px -8% 0px" }}
-      transition={{ duration: 0.9, ease: EASE, delay }} className={className} {...rest}>
+      transition={{ duration: 0.6, ease: EASE, delay }} className={className} {...rest}>
       {children}
     </Comp>
+  );
+}
+
+const DAY = 86400;
+const utcDay = (ts) => Math.floor(ts / DAY);
+
+function calendarStats(cal) {
+  const days = Object.keys(cal).map((k) => utcDay(+k)).sort((a, b) => a - b);
+  const set = new Set(days);
+  let max = 0, run = 0, prev = null;
+  for (const d of days) { run = prev !== null && d === prev + 1 ? run + 1 : 1; max = Math.max(max, run); prev = d; }
+  const today = utcDay(Date.now() / 1000);
+  let d = set.has(today) ? today : today - 1, current = 0;
+  while (set.has(d)) { current++; d--; }
+  const total = Object.values(cal).reduce((a, b) => a + b, 0);
+  return { current, max, total };
+}
+
+function useLeetCode() {
+  const [stats, setStats] = useState(DATA.leetcode);
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch("/api/leetcode", { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((j) => {
+        const u = j?.data?.matchedUser;
+        const get = (d) => u?.submitStatsGlobal?.acSubmissionNum?.find((x) => x.difficulty === d)?.count;
+        const solved = get("All");
+        if (!solved) return;
+        let calendar = null;
+        try {
+          const raw = JSON.parse(u.userCalendar?.submissionCalendar || "{}");
+          calendar = Object.fromEntries(Object.entries(raw).map(([k, v]) => [utcDay(+k), v]));
+          calendar = { days: calendar, today: utcDay(Date.now() / 1000), activeDays: u.userCalendar.totalActiveDays, ...calendarStats(raw) };
+        } catch {}
+        setStats((s) => ({ ...s, solved, easy: get("Easy") ?? s.easy, medium: get("Medium") ?? s.medium, hard: get("Hard") ?? s.hard, calendar, live: true }));
+      })
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, []);
+  return stats;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const HEAT = [0, 30, 55, 80, 100];
+const level = (n) => (!n ? 0 : n === 1 ? 1 : n <= 3 ? 2 : n <= 6 ? 3 : 4);
+
+function Heatmap({ days, today }) {
+  const C = 10, G = 3, S = C + G, WEEKS = 53, TOP = 14;
+  const dow = new Date(today * DAY * 1000).getUTCDay();
+  const start = today - dow - (WEEKS - 1) * 7;
+  const cells = [], labels = [];
+  let lastMonth = -1;
+  for (let w = 0; w < WEEKS; w++) {
+    for (let r = 0; r < 7; r++) {
+      const d = start + w * 7 + r;
+      if (d > today) break;
+      const date = new Date(d * DAY * 1000);
+      if (r === 0 && date.getUTCMonth() !== lastMonth) {
+        lastMonth = date.getUTCMonth();
+        if (w < WEEKS - 2) labels.push(<text key={`m${w}`} x={w * S} y={9} className="fill-faint" fontSize="9" fontWeight="600">{MONTHS[lastMonth]}</text>);
+      }
+      const n = days[d] || 0, l = level(n);
+      cells.push(
+        <rect key={d} x={w * S} y={TOP + r * S} width={C} height={C} rx={2.5}
+          className={l ? undefined : "fill-surface-2"} style={l ? { fill: `color-mix(in srgb, var(--accent) ${HEAT[l]}%, transparent)` } : undefined}>
+          <title>{`${n || "No"} submission${n === 1 ? "" : "s"} on ${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`}</title>
+        </rect>
+      );
+    }
+  }
+  return (
+    <svg viewBox={`0 0 ${WEEKS * S - G} ${TOP + 7 * S - G}`} className="block h-auto w-full" role="img" aria-label="LeetCode submission activity over the past year">
+      {labels}{cells}
+    </svg>
   );
 }
 
@@ -280,13 +343,13 @@ function CountUp({ value, suffix = "", className = "" }) {
   const inView = useInView(ref, { once: true, amount: 0.5 });
   const reduce = useReducedMotion();
   const [n, setN] = useState(0);
+  const cur = useRef(0);
   useEffect(() => {
-    if (!inView) return;
-    if (reduce) return setN(value);
-    const c = animate(0, value, { duration: 1.6, ease: EASE, onUpdate: (v) => setN(Math.round(v)) });
+    if (!inView || reduce) return;
+    const c = animate(cur.current, value, { duration: 1.6, ease: EASE, onUpdate: (v) => { cur.current = v; setN(Math.round(v)); } });
     return () => c.stop();
   }, [inView, value, reduce]);
-  return <span ref={ref} className={className}>{n}{suffix}</span>;
+  return <span ref={ref} className={className}>{reduce ? value : n}{suffix}</span>;
 }
 
 function CopyButton({ value, label, onCopied }) {
@@ -294,7 +357,7 @@ function CopyButton({ value, label, onCopied }) {
   useEffect(() => { if (!ok) return; const t = setTimeout(() => setOk(false), 1800); return () => clearTimeout(t); }, [ok]);
   return (
     <button type="button" aria-label={ok ? `${label} copied` : `Copy ${label}`}
-      onClick={async () => { try { await navigator.clipboard.writeText(value); setOk(true); onCopied?.(value); } catch { /* blocked */ } }}
+      onClick={async () => { try { await navigator.clipboard.writeText(value); setOk(true); onCopied?.(value); } catch {} }}
       className={`ml-auto flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[11px] border transition-colors ${ok ? "border-mint text-mint" : "border-white/20 text-white/80 hover:border-white"}`}>
       <Icon name={ok ? "check" : "copy"} className="h-[15px] w-[15px]" />
     </button>
@@ -333,12 +396,10 @@ function Socials({ label, light = false, className = "" }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PAGE
-   ═══════════════════════════════════════════════════════════ */
 export default function Portfolio() {
   const { dark, toggle } = useTheme();
   const active = useActiveSection(NAV_IDS);
+  const lc = useLeetCode();
   const [toast, setToast] = useState(null);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 1900); return () => clearTimeout(t); }, [toast]);
 
@@ -348,11 +409,11 @@ export default function Portfolio() {
         <ScrollProgress />
         <Header active={active} dark={dark} toggle={toggle} />
         <main>
-          <Hero />
+          <Hero lc={lc} />
           <Marquee />
           <About />
           <Services />
-          <Skills />
+          <Skills lc={lc} />
           <Projects />
           <Experience />
           <Contact onCopied={(v) => setToast(`Copied: ${v}`)} />
@@ -380,7 +441,6 @@ function ScrollProgress() {
   return <motion.div aria-hidden style={{ scaleX }} className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-accent" />;
 }
 
-/* ── Header ── */
 function Header({ active, dark, toggle }) {
   const { scrolled, hidden } = useScrollState();
   const [open, setOpen] = useState(false);
@@ -433,11 +493,10 @@ function Header({ active, dark, toggle }) {
   );
 }
 
-/* ── Hero ── */
-function Hero() {
+function Hero({ lc }) {
   const [ready, setReady] = useState(false);
   useEffect(() => { const t = setTimeout(() => setReady(true), 80); return () => clearTimeout(t); }, []);
-  const up = (delay) => ({ initial: { opacity: 0, y: 22 }, animate: ready ? { opacity: 1, y: 0 } : {}, transition: { duration: 0.9, ease: EASE, delay } });
+  const up = (delay) => ({ initial: { opacity: 0, y: 18 }, animate: ready ? { opacity: 1, y: 0 } : {}, transition: { duration: 0.7, ease: EASE, delay } });
   const parts = DATA.label.split(" · ");
   return (
     <section id="home" className="relative flex min-h-svh items-center overflow-hidden pb-16 pt-28">
@@ -452,13 +511,13 @@ function Hero() {
             <span className="sr-only">{DATA.name.join(" ")}</span>
             {DATA.name.map((w, i) => (
               <span key={w} aria-hidden className="block overflow-hidden pb-[0.06em]">
-                <motion.span className="block" initial={{ y: "105%" }} animate={{ y: ready ? "0%" : "105%" }} transition={{ duration: 1.1, ease: EASE, delay: i * 0.1 }}>
+                <motion.span className="block" initial={{ y: "105%" }} animate={{ y: ready ? "0%" : "105%" }} transition={{ duration: 0.9, ease: EASE, delay: i * 0.08 }}>
                   {w}{i === 1 && <em className="not-italic text-accent">.</em>}
                 </motion.span>
               </span>
             ))}
           </h1>
-          <motion.div {...up(0.25)} className="mt-[18px] flex flex-wrap items-center gap-2.5 font-display text-[clamp(17px,1.6vw,20px)] font-semibold text-muted">
+          <motion.div {...up(0.18)} className="mt-[18px] flex flex-wrap items-center gap-2.5 font-display text-[clamp(17px,1.6vw,20px)] font-semibold text-muted">
             {parts.map((p, i) => (
               <span key={p} className="flex items-center gap-2.5">
                 {i > 0 && <i className="h-[5px] w-[5px] rounded-full bg-accent" />}
@@ -466,19 +525,19 @@ function Hero() {
               </span>
             ))}
           </motion.div>
-          <motion.p {...up(0.35)} className="mt-[18px] max-w-[540px] text-[17px] text-muted">{DATA.intro}</motion.p>
-          <motion.div {...up(0.45)} className="mt-[30px] flex flex-wrap gap-2.5">
+          <motion.p {...up(0.24)} className="mt-[18px] max-w-[540px] text-[17px] text-muted">{DATA.intro}</motion.p>
+          <motion.div {...up(0.3)} className="mt-[30px] flex flex-wrap gap-2.5">
             <a href={DATA.mailto} className="pf-btn pf-btn-accent">Get In Touch <Icon name="arrow" /></a>
             <a href={DATA.cv} download={DATA.cvFileName} className="pf-btn pf-btn-outline">Download CV <Icon name="download" /></a>
           </motion.div>
-          <motion.a {...up(0.5)} href={DATA.cv} target="_blank" rel="noopener noreferrer" className="group mt-3.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-accent">
+          <motion.a {...up(0.34)} href={DATA.cv} target="_blank" rel="noopener noreferrer" className="group mt-3.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted transition-colors hover:text-accent">
             View my latest resume <Icon name="arrowUpRight" className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </motion.a>
-          <motion.div {...up(0.55)}><Socials label="Find me online" className="mt-[22px]" /></motion.div>
-          <motion.div {...up(0.65)} className="mt-[34px] flex flex-wrap gap-x-9 gap-y-3 border-t border-line pt-6">
-            {[...DATA.heroStats, DATA.stats[1]].map((s) => (
+          <motion.div {...up(0.38)}><Socials label="Find me online" className="mt-[22px]" /></motion.div>
+          <motion.div {...up(0.44)} className="mt-[34px] flex flex-wrap gap-x-9 gap-y-3 border-t border-line pt-6">
+            {DATA.heroStats.map((s) => (
               <div key={s.label}>
-                <CountUp value={s.value} suffix={s.suffix} className="block font-display text-[clamp(28px,3vw,38px)] font-extrabold leading-none tracking-[-0.03em]" />
+                <CountUp value={s.live ? lc[s.live] : s.value} suffix={s.suffix} className="block font-display text-[clamp(28px,3vw,38px)] font-extrabold leading-none tracking-[-0.03em]" />
                 <span className="text-[13px] font-semibold text-faint">{s.label}</span>
               </div>
             ))}
@@ -490,11 +549,11 @@ function Hero() {
   );
 }
 
-function FloatCard({ ready, delay, className, color = "var(--accent)", children, floatDelay = "0s" }) {
+function FloatCard({ ready, delay, className, color = "var(--accent)", children, float = false }) {
   return (
     <motion.div initial={{ opacity: 0, y: 24, scale: 0.9 }} animate={ready ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ type: "spring", stiffness: 160, damping: 14, delay }}
       className={`absolute z-[3] rounded-[18px] border border-line bg-surface/90 p-3 pr-4 shadow-[var(--shadow)] backdrop-blur-md ${className}`}>
-      <div className="pf-float flex items-center gap-3" style={{ animationDelay: floatDelay, "--c": color }}>{children}</div>
+      <div className={`${float ? "pf-float " : ""}flex items-center gap-3`} style={{ "--c": color }}>{children}</div>
     </motion.div>
   );
 }
@@ -516,26 +575,25 @@ function Portrait({ ready }) {
         <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="97" strokeDasharray="2 6" /><circle cx="100" cy="100" r="91" strokeDasharray="40 14 4 14" strokeOpacity=".2" /></svg>
       </div>
       <motion.div aria-hidden className="pf-disc" initial={{ scale: 0 }} animate={{ scale: ready ? 1 : 0 }} transition={{ type: "spring", stiffness: 110, damping: 13, delay: 0.1 }} />
-      <motion.div aria-hidden className="pf-orbit" initial={{ opacity: 0 }} animate={{ opacity: ready ? 1 : 0 }} transition={{ duration: 0.6, delay: 0.9 }}>
+      <motion.div aria-hidden className="pf-orbit" initial={{ opacity: 0 }} animate={{ opacity: ready ? 1 : 0 }} transition={{ duration: 0.6, delay: 0.6 }}>
         <div className="pf-orbit-track">{ORBIT.map(([t, a]) => <div key={t} className="pf-orbit-item" style={{ "--a": `${a}deg` }}><span>{t}</span></div>)}</div>
       </motion.div>
       <div className="pf-figure">
         <motion.div className="absolute inset-0" style={{ x: ix, y: iy }}>
-          {/* width + h-auto keeps the avatar's real proportions (no stretching) */}
           <motion.img src={DATA.avatar} alt={`Portrait of ${DATA.name.join(" ")}`} width={820} height={1101} fetchPriority="high"
             className="absolute bottom-0 left-[6%] h-auto w-[88%] drop-shadow-[0_18px_24px_rgba(0,0,0,0.18)]"
-            initial={{ y: "40%", opacity: 0 }} animate={ready ? { y: "0%", opacity: 1 } : {}} transition={{ duration: 1.4, ease: EASE, delay: 0.45 }} />
+            initial={{ y: "40%", opacity: 0 }} animate={ready ? { y: "0%", opacity: 1 } : {}} transition={{ duration: 1, ease: EASE, delay: 0.25 }} />
         </motion.div>
       </div>
-      <FloatCard ready={ready} delay={1} className="left-[-4%] top-[44%] lg:left-[-14%]">
+      <FloatCard ready={ready} delay={0.6} float className="left-[-4%] top-[44%] lg:left-[-14%]">
         <i className={`${icon} bg-accent`}>★</i>
         <div><CountUp value={4} suffix="+ Years" className="block font-display text-[22px] font-extrabold leading-[1.05]" /><small className="text-xs font-semibold text-faint">Experience</small></div>
       </FloatCard>
-      <FloatCard ready={ready} delay={1.15} floatDelay="-3s" className="bottom-[12%] right-[-4%] lg:right-[-12%]">
+      <FloatCard ready={ready} delay={0.7} className="bottom-[12%] right-[-4%] lg:right-[-12%]">
         <i className={`${icon} bg-navy`}>◉</i>
         <div><CountUp value={4000} suffix="+" className="block font-display text-[22px] font-extrabold leading-[1.05]" /><small className="text-xs font-semibold text-faint">Users Served</small></div>
       </FloatCard>
-      <FloatCard ready={ready} delay={1.3} floatDelay="-1.5s" className="right-0 top-[22%] py-2.5 lg:right-[-6%]">
+      <FloatCard ready={ready} delay={0.8} className="right-0 top-[22%] py-2.5 lg:right-[-6%]">
         <i className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px] bg-mint text-sm not-italic text-white">✓</i>
         <b className="text-sm">{DATA.experiences[0].company}</b>
       </FloatCard>
@@ -543,7 +601,6 @@ function Portrait({ ready }) {
   );
 }
 
-/* ── Marquee ── */
 function Marquee() {
   const pill = "inline-flex items-center gap-2.5 whitespace-nowrap rounded-full border border-line px-4 py-2 text-sm font-semibold text-muted before:h-[7px] before:w-[7px] before:rounded-full before:bg-accent";
   const a = [...DATA.marquee, ...DATA.marquee], rev = [...DATA.marquee].reverse();
@@ -555,7 +612,6 @@ function Marquee() {
   );
 }
 
-/* ── About ── */
 function About() {
   return (
     <section id="about" className="py-[clamp(84px,11vw,140px)]">
@@ -612,7 +668,6 @@ function SectionHead({ kicker, title, accent, sub, children }) {
   );
 }
 
-/* ── Services ── */
 function Services() {
   return (
     <section id="services" className="pb-[clamp(84px,11vw,140px)]">
@@ -634,9 +689,8 @@ function Services() {
   );
 }
 
-/* ── Skills ── */
-function Skills() {
-  const L = DATA.leetcode;
+function Skills({ lc }) {
+  const L = lc;
   const chip = "rounded-full bg-surface-2 px-[11px] py-[5px] text-[13px] font-semibold text-muted transition-colors hover:bg-soft hover:text-accent";
   const card = "rounded-[22px] border border-line bg-surface";
   return (
@@ -686,10 +740,19 @@ function Skills() {
             <div className="mt-[18px] flex items-baseline gap-2.5">
               <CountUp value={L.solved} className="font-display text-[56px] font-extrabold leading-none tracking-[-0.04em]" />
               <span className="font-semibold text-muted">problems solved on LeetCode</span>
+              {L.live && (
+                <span title="Synced live from LeetCode" className="ml-auto inline-flex items-center gap-1.5 self-center rounded-full bg-[#00B8A3]/12 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-wider text-[#00876F] dark:text-[#2DD4BF]">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#00B8A3] opacity-75 motion-safe:animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00B8A3]" />
+                  </span>
+                  Live
+                </span>
+              )}
             </div>
             <div role="img" aria-label={`${L.easy} easy, ${L.medium} medium, ${L.hard} hard`} className="mt-4 flex h-3 overflow-hidden rounded-full bg-surface-2">
               {[[L.easy, "#00B8A3"], [L.medium, "#FFC01E"], [L.hard, "#FF375F"]].map(([v, c], i) => (
-                <motion.i key={c} className="block h-full" style={{ background: c }} initial={{ width: 0 }} whileInView={{ width: `${(v / L.solved) * 100}%` }}
+                <motion.i key={c + L.solved} className="block h-full" style={{ background: c }} initial={{ width: 0 }} whileInView={{ width: `${(v / L.solved) * 100}%` }}
                   viewport={{ once: true, amount: 0.6 }} transition={{ duration: 1.3, ease: EASE, delay: i * 0.15 }} />
               ))}
             </div>
@@ -698,6 +761,20 @@ function Skills() {
                 <span key={t} className="flex items-center gap-[7px]"><i className="h-[9px] w-[9px] rounded-full" style={{ background: c }} /><b className="text-ink">{v}</b> {t}</span>
               ))}
             </div>
+            {L.calendar && (
+              <div className="mt-5 border-t border-line pt-5">
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[[`${L.calendar.current > 0 ? "🔥 " : ""}${L.calendar.current}`, "Current streak"], [L.calendar.max, "Max streak"], [L.calendar.activeDays, "Active days"]].map(([v, t]) => (
+                    <div key={t} className="rounded-[14px] bg-surface-2 px-3 py-2.5">
+                      <b className="block font-display text-xl font-extrabold leading-tight">{v}</b>
+                      <span className="text-[12px] font-semibold text-faint">{t}</span>
+                    </div>
+                  ))}
+                </div>
+                <small className="mb-2 mt-4 block text-[12.5px] font-semibold text-faint">{L.calendar.total} submissions in the past year</small>
+                <Heatmap days={L.calendar.days} today={L.calendar.today} />
+              </div>
+            )}
             <span className="mt-[18px] inline-flex items-center gap-2 rounded-full bg-[#FFA116]/15 px-3.5 py-[7px] text-[13px] font-bold text-[#C77A00] dark:text-[#FFB84D]">🏅 {L.badge}</span>
             <div className="mt-4">
               <small className="mb-2 block text-[12.5px] font-semibold text-faint">Focus areas · solved in {L.langs}</small>
@@ -721,7 +798,6 @@ function Skills() {
   );
 }
 
-/* ── Projects ── */
 function ProjectImage({ p }) {
   const [failed, setFailed] = useState(false);
   return (
@@ -759,13 +835,13 @@ function Projects() {
           </div>
         </SectionHead>
         <motion.div layout className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {list.map((p) => {
+          <AnimatePresence mode="popLayout">
+            {list.map((p, i) => {
               const Card = p.link ? motion.a : motion.div;
               const linkProps = p.link ? { href: p.link, target: "_blank", rel: "noopener noreferrer" } : {};
               return (
-                <Card key={p.title} {...linkProps} layout initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.94 }}
-                  transition={{ duration: 0.45, ease: EASE }}
+                <Card key={p.title} {...linkProps} layout initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+                  exit={{ opacity: 0, scale: 0.94 }} transition={{ duration: 0.6, ease: EASE, delay: (i % 3) * 0.08 }}
                   className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-surface transition-[box-shadow,border-color,translate] duration-500 hover:-translate-y-2 hover:shadow-[var(--shadow)]"
                   style={{ "--pc": p.accent }}>
                   <div aria-hidden className="flex items-center gap-1.5 border-b border-line bg-surface-2 px-3 py-[9px]">
@@ -791,7 +867,6 @@ function Projects() {
   );
 }
 
-/* ── Experience ── */
 function Experience() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 60%", "end 60%"] });
@@ -852,7 +927,6 @@ function TimelineItem({ e, left, current }) {
   );
 }
 
-/* ── Contact ── */
 function Contact({ onCopied }) {
   const row = "flex items-center gap-3.5 rounded-[18px] border border-white/10 bg-white/[0.06] px-4 py-3.5 transition-all duration-500 hover:translate-x-1.5 hover:bg-white/10";
   const ico = "flex h-[42px] w-[42px] flex-shrink-0 items-center justify-center rounded-[13px] bg-[#FF4D5E]/20 text-[#FF8A97]";
@@ -894,7 +968,6 @@ function Contact({ onCopied }) {
   );
 }
 
-/* ── Back to top (ring shows page progress) ── */
 function BackToTop() {
   const { y } = useScrollState();
   const { scrollYProgress } = useScroll();
